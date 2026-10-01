@@ -1,0 +1,23 @@
+[build-system]
+requires = ["setuptools>=61.0"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "kirc-survival"
+version = "0.1.0"
+description = "Site-held-out survival evaluation in TCGA-KIRC"
+readme = "README.md"
+authors = [{ name = "Vikhram S" }]
+license = { text = "MIT" }
+requires-python = ">=3.10"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.ruff]
+line-length = 100
+target-version = "py312"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+pythonpath = ["src"]

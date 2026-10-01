@@ -15,12 +15,12 @@ cohort_filtering:
     - "age"
     - "gender"
     - "stage"
-    - "grade"
+  note: "Neoplasm histologic grade is 'Not Reported' in GDC KIRC clinical harmonized data and is excluded."
 
 site_handling:
   group_column: "site"   # Tissue Source Site (TSS) code
   min_site_patients: 5   # Threshold for tiny site pooling or exclusion in sensitivity analysis
-  tiny_site_rule: "pool_into_other"  # Sites with < min_site_patients pooled into 'OTHER' for grouped CV
+  tiny_site_rule: "pool_into_other"  # 9 sites with < 5 patients pooled into 'OTHER' for grouped CV
 
 cross_validation:
   n_splits: 5
@@ -73,3 +73,7 @@ replication_eligibility:
   min_patients: 300
   min_events: 80
   min_sites: 10
+  selected_cohorts:
+    - "TCGA-HNSC"
+    - "TCGA-LUSC"
+

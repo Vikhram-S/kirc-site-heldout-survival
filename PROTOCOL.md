@@ -54,20 +54,25 @@ Prior literature highlights substantial site-associated batch effects and spatia
   2. Exactly one sample per patient (in case of replicate vials, retain the first alphanumeric aliquot).
   3. Overall survival time strictly positive ($\text{OS time} > 0$ days).
 - **Clinical Predictors:**
-  - Age at diagnosis (continuous, years).
-  - Biological sex (categorical: male, female).
-  - Pathologic stage (ordinal/categorical: Stage I, II, III, IV).
-  - Neoplasm histologic grade (ordinal/categorical: G1, G2, G3, G4).
+  - Age at diagnosis (continuous, years; 0% missing in TCGA-KIRC).
+  - Biological sex (categorical: male, female; 0% missing in TCGA-KIRC).
+  - Pathologic stage (categorical: Stage I, II, III, IV; 3/533 = 0.56% missing, median/mode imputed on training folds).
+  - Note on Grade: Histologic grade is designated 'Not Reported' across all samples in the harmonized GDC KIRC clinical matrix. To avoid synthetic or ungrounded data imputation, the clinical baseline model M0 is formulated strictly on verified covariates: age, sex, and stage.
 - **Molecular Predictors:**
-  - High-throughput RNA-seq expression estimates ($\log_2(\text{norm\_count} + 1)$).
+  - High-throughput RNA-seq expression estimates ($\log_2(\text{norm\_count} + 1)$ from STAR). 529 primary tumor samples have matched clinical and RNA-seq.
 - **Site Identifier:**
-  - Tissue Source Site (TSS) code extracted from the second barcode segment (`TCGA-XX-XXXX` $\rightarrow$ `XX`).
+  - Tissue Source Site (TSS) code extracted from the second barcode segment (`TCGA-XX-XXXX` $\rightarrow$ `XX`). 20 unique TSS sites identified.
 
-### 5.2 Pre-Specified Replication Cohort Eligibility Rules
-To select up to 2 additional TCGA replication cohorts objectively without outcome peeking, a candidate cohort must satisfy:
+### 5.2 Pre-Specified Replication Cohort Eligibility Rules & Selection
+To select up to 2 additional TCGA replication cohorts objectively without outcome peeking, candidates must satisfy:
 1. Total sample size $N \ge 300$ primary tumor patients with matched RNA-seq and clinical records.
 2. Observed overall survival events $E \ge 80$ deaths.
 3. Number of contributing tissue source sites $S \ge 10$, each with $\ge 5$ patients.
+
+**Locked Replication Cohorts (Pre-specified at Gate 1):**
+Applying this rule to all TCGA cohorts ranked by event count selects:
+1. **TCGA-HNSC** ($N=528$, $E=222$, $S=25$, 15 sites with $\ge 5$ patients)
+2. **TCGA-LUSC** ($N=501$, $E=216$, $S=29$, 17 sites with $\ge 5$ patients)
 
 ### 5.3 Strict Preprocessing & Leakage Prevention Rules
 1. All transformations (feature scaling, imputation, variance filtering) MUST be fit strictly on training fold observations within `sklearn.pipeline.Pipeline`.
