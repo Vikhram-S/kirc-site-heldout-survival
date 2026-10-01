@@ -1,0 +1,53 @@
+# Python & environments
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+env/
+venv/
+.venv/
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Testing & Linting
+.pytest_cache/
+.coverage
+htmlcov/
+.ruff_cache/
+
+# IDE & OS
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
+Thumbs.db
+
+# Data & Large Files (TCGA/GDC data is never committed)
+data/
+raw_data/
+*.tar.gz
+*.gz
+*.tsv
+*.tsv.gz
+*.csv.gz
+*.parquet
+
+# Experiment artifacts > 5MB or cache
+checkpoints/
+paper/generated/*.pdf
+paper/paper_overleaf.zip

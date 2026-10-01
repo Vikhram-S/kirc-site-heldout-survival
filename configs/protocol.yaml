@@ -1,0 +1,75 @@
+study:
+  title: "Does the added prognostic value of RNA-seq over clinical variables survive site-held-out validation? A pre-specified re-evaluation in TCGA-KIRC"
+  cohort: "TCGA-KIRC"
+  status: "preliminary, preprint in preparation"
+
+random_seeds:
+  split_seeds: [42, 123, 456, 789, 1011]
+  model_seed: 42
+  shuffled_control_seed: 999
+
+cohort_filtering:
+  sample_type_code: "01"  # Primary Solid Tumor
+  min_followup_days: 1    # OS time > 0
+  clinical_covariates:
+    - "age"
+    - "gender"
+    - "stage"
+    - "grade"
+
+site_handling:
+  group_column: "site"   # Tissue Source Site (TSS) code
+  min_site_patients: 5   # Threshold for tiny site pooling or exclusion in sensitivity analysis
+  tiny_site_rule: "pool_into_other"  # Sites with < min_site_patients pooled into 'OTHER' for grouped CV
+
+cross_validation:
+  n_splits: 5
+  n_repeats: 5
+  schemes:
+    - "repeated_stratified_kfold"
+    - "repeated_stratified_group_kfold"
+
+inner_cv:
+  n_splits: 3
+
+models:
+  m0:
+    name: "clinical_cox"
+    description: "Cox proportional hazards on clinical covariates only"
+    penalized: false
+  m1:
+    name: "clinical_plus_rna_elasticnet"
+    description: "Cox proportional hazards on clinical (unpenalized) + top-variance RNA features (elastic-net penalized)"
+    top_n_genes: 500
+    l1_ratios: [0.1, 0.5, 0.7, 0.9]
+    alphas_count: 20
+
+metrics:
+  primary: "harrell_c_index"
+  secondary:
+    - "uno_c_index"
+    - "integrated_brier_score"
+  time_horizons_years: [3, 5]
+  shuffled_tolerance_ci: [0.40, 0.60]
+
+uncertainty:
+  bootstrap_method: "cluster_bootstrap"
+  cluster_level: "patient"
+  n_bootstraps: 1000
+  alpha: 0.05
+
+diagnostics:
+  site_only_model: true
+  rna_to_site_classifier: true
+  shuffled_label_control: true
+  leakage_canary_demonstration: true
+
+sensitivity_analyses:
+  gene_counts: [100, 500, 1000]
+  model_classes: ["elastic_net_cox", "random_survival_forest"]
+  exclude_tiny_sites: true
+
+replication_eligibility:
+  min_patients: 300
+  min_events: 80
+  min_sites: 10

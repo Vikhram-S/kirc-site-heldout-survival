@@ -1,0 +1,90 @@
+\documentclass{article}
+\usepackage{arxiv}
+
+\usepackage[utf8]{inputenc}
+\usepackage[T1]{fontenc}
+\usepackage{booktabs}
+\usepackage{amsfonts}
+\usepackage{nicefrac}
+\usepackage{microtype}
+\usepackage{graphicx}
+\usepackage{natbib}
+\usepackage{doi}
+
+\input{generated/numbers.tex}
+
+\title{Does the Added Prognostic Value of RNA-seq Over Clinical Variables Survive Site-Held-Out Validation? A Pre-Specified Re-Evaluation in TCGA-KIRC}
+
+\author{
+  Vikhram S \\
+  Department of Biotechnology \\
+  Saveetha Institute of Medical and Technical Sciences \\
+  Chennai, India \\
+  \texttt{vikhrams@saveetha.ac.in}
+}
+
+\date{October 1, 2026}
+
+\begin{document}
+\maketitle
+
+\begin{abstract}
+\textbf{Background:} Prognostic multivariable prediction models combining bulk transcriptomic data with baseline clinical predictors frequently report substantial gains in discrimination under randomized cross-validation. However, multi-center observational datasets may exhibit center-level acquisition variability and batch confounding.
+\textbf{Methods:} In this pre-specified study in TCGA Kidney Renal Clear Cell Carcinoma (TCGA-KIRC), we evaluate whether incremental prognostic value ($\Delta C$) survives site-held-out validation. We fit an unpenalized clinical Cox model (M0: age, sex, stage, grade) and an incremental model (M1: unpenalized clinical covariates plus elastic-net penalized top-variance RNA-seq features). Discrimination is evaluated across repeated stratified random cross-validation versus repeated site-grouped cross-validation partitioned by Tissue Source Site (TSS).
+\textbf{Results:} Results pending experimental execution following protocol freeze.
+\textbf{Conclusions:} Study conclusions will reflect empirical findings exactly as observed without selective reporting.
+\end{abstract}
+
+\keywords{Survival Analysis \and Prognostic Biomarkers \and TCGA-KIRC \and Site-Held-Out Validation \and Batch Effects}
+
+\section{Introduction}
+Prognostic prediction models utilizing high-throughput transcriptomics have proliferated across oncology literature. An essential question in translational biomarker development is whether molecular profiles provide incremental discrimination over readily available clinical and pathological covariates.
+
+\section{Related Work}
+Prior investigations have documented significant site-associated variations and center-correlated artifacts in multi-center datasets \citep{howard2021site, herrmann2020benchmark, survboard2023}.
+
+\section{Methods}
+\subsection{Cohort and Study Design}
+The study cohort comprises primary solid tumor samples from TCGA-KIRC obtained via UCSC Xena.
+
+\subsection{Cross-Validation Regimes}
+We compare repeated event-stratified cross-validation against repeated site-grouped cross-validation using Tissue Source Site identifiers.
+
+\subsection{Model Specifications}
+M0 denotes the clinical baseline Cox proportional hazards model. M1 combines clinical covariates and top-variance RNA features regularized via elastic-net penalties.
+
+\subsection{Statistical Analysis}
+Primary endpoint is paired $\Delta C = C_{\text{M1}} - C_{\text{M0}}$. Uncertainty is characterized via clustered bootstrap resampling.
+
+\section{Results}
+\textit{[Results will be generated programmatically from experimental outputs.]}
+
+\section{Discussion}
+\textit{[Discussion will be formulated based strictly on empirical results.]}
+
+\section{Limitations}
+Key limitations include retrospective observational registry constraints, proxy site definitions, and non-interventional design.
+
+\section{Declarations}
+\subsection*{Ethics Approval}
+The study uses publicly available, de-identified retrospective data from TCGA; formal ethical review waiver applies [wording TO VERIFY with medRxiv].
+
+\subsection*{Data and Code Availability}
+Code is available at \url{https://github.com/Vikhram-S/kirc-site-heldout-survival}. Raw data access procedures are documented via UCSC Xena. [Zenodo DOI TO FILL].
+
+\subsection*{Competing Interests}
+The author declares no competing interests.
+
+\subsection*{Funding}
+No external funding was received for this work.
+
+\subsection*{Contributions}
+V.S. conceived the study, specified the protocol, executed analysis, and authored the manuscript.
+
+\subsection*{AI-Assistance Disclosure}
+LLM-based coding assistance was used for code scaffolding and document formatting. All scientific design and methodological decisions were directed by the human author.
+
+\bibliographystyle{unsrtnat}
+\bibliography{references}
+
+\end{document}
