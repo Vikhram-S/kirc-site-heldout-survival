@@ -3,7 +3,6 @@
 \centering
 \caption{Negative control diagnostics and sensitivity analyses.}
 \label{tab:sensitivity}
-\resizebox{0.95\textwidth}{!}{%
 \begin{tabular}{llcc}
 \toprule
 Category & Experiment / Control & Metric / Value & Benchmark \\
@@ -11,12 +10,11 @@ Category & Experiment / Control & Metric / Value & Benchmark \\
 Diagnostic & Site-Only Survival Model & $C = \SiteOnlyCMean$ & 0.50 (No site signal) \\
 Diagnostic & RNA $\to$ Site Batch Classifier & Acc = \RNASiteAccuracy & \RNASiteBaseline\ (Majority Class) \\
 Negative Control & Shuffled-Label Survival Model & $C = \ShuffledCMean$ & 0.50 (Null baseline) \\
-Methodological Canary & Pre-Split vs.\ Nested Selection & Leaked $C = \CanaryLeakedCMean$ & Nested $C = \CanaryNestedCMean$ \\
+Methodological Canary & Pre-Split Feature Selection & Leaked $C = \CanaryLeakedCMean$ & Artificial Inflation \\
 \midrule
 Sensitivity & Top 100 Genes (Random / Site $\Delta C$) & +\DeltaCOneHundredRandom\ / +\DeltaCOneHundredSite & Baseline (500 genes) \\
 Sensitivity & Top 1000 Genes (Random / Site $\Delta C$) & +\DeltaCOneThousandRandom\ / +\DeltaCOneThousandSite & Baseline (500 genes) \\
 Sensitivity & Excluding Tiny Sites $<5$ (Random / Site $\Delta C$) & +\DeltaCTinyExcludedRandom\ / +\DeltaCTinyExcludedSite & All 20 sites \\
 \bottomrule
-\end{tabular}%
-}
+\end{tabular}
 \end{table}

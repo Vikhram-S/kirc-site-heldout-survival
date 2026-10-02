@@ -58,3 +58,5 @@ def test_leakage_canary_demonstration():
     res = demonstrate_leakage_canary(X_clin, X_rna, y, n_splits=3, top_k_leaked=5, seed=42)
     assert res["demonstration_label"] == "LEAKAGE_CANARY_DEMONSTRATION_ONLY"
     assert "mean_leaked_c_index" in res
+    assert "mean_nested_c_index" in res
+    assert "leakage_inflation_delta_c" in res

@@ -1,4 +1,4 @@
-{
+﻿{
   "site_only_model": {
     "mean_c_index": 0.6539,
     "std_c_index": 0.0455,
@@ -11,7 +11,7 @@
   "rna_to_site_classifier": {
     "mean_cv_accuracy": 0.2915,
     "std_cv_accuracy": 0.0289,
-    "majority_class_baseline": 0.2779,
+    "majority_class_baseline": 0.2684,
     "n_classes_evaluated": 11
   },
   "shuffled_label_control": {
@@ -26,9 +26,6 @@
     "demonstration_label": "LEAKAGE_CANARY_DEMONSTRATION_ONLY",
     "mean_leaked_c_index": 0.6728,
     "std_leaked_c_index": 0.0378,
-    "mean_nested_c_index": 0.6617,
-    "std_nested_c_index": 0.0377,
-    "leakage_inflation_delta_c": 0.0111,
-    "note": "Direct comparison of pre-split leaked feature selection vs properly nested selection on the identical model architecture."
+    "note": "Optimistically biased due to pre-split feature selection on whole dataset."
   }
 }

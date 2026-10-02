@@ -1,52 +1,52 @@
-{
+﻿{
   "gene_count_100": {
     "repeated_stratified_kfold": {
       "mean_c_m0": 0.7514,
-      "mean_c_m1": 0.7706,
-      "mean_delta_c": 0.0192
+      "mean_c_m1": 0.7559,
+      "mean_delta_c": 0.0045
     },
     "repeated_stratified_group_kfold": {
       "mean_c_m0": 0.734,
-      "mean_c_m1": 0.7561,
-      "mean_delta_c": 0.0221
+      "mean_c_m1": 0.7387,
+      "mean_delta_c": 0.0047
     }
   },
   "gene_count_1000": {
     "repeated_stratified_kfold": {
       "mean_c_m0": 0.7514,
-      "mean_c_m1": 0.7726,
-      "mean_delta_c": 0.0211
+      "mean_c_m1": 0.7555,
+      "mean_delta_c": 0.0041
     },
     "repeated_stratified_group_kfold": {
       "mean_c_m0": 0.734,
-      "mean_c_m1": 0.7596,
-      "mean_delta_c": 0.0257
+      "mean_c_m1": 0.7394,
+      "mean_delta_c": 0.0054
     }
   },
   "l1_ratio_0.1": {
     "repeated_stratified_kfold": {
-      "mean_delta_c": 0.027
+      "mean_delta_c": 0.0018
     },
     "repeated_stratified_group_kfold": {
-      "mean_delta_c": 0.0324
+      "mean_delta_c": 0.0005
     }
   },
   "l1_ratio_0.9": {
     "repeated_stratified_kfold": {
-      "mean_delta_c": 0.023
+      "mean_delta_c": 0.0048
     },
     "repeated_stratified_group_kfold": {
-      "mean_delta_c": 0.0283
+      "mean_delta_c": 0.007
     }
   },
   "excluding_tiny_sites": {
     "repeated_stratified_kfold": {
-      "mean_delta_c": 0.0316,
+      "mean_delta_c": 0.0018,
       "n_patients": 511,
       "n_sites": 11
     },
     "repeated_stratified_group_kfold": {
-      "mean_delta_c": 0.0354,
+      "mean_delta_c": 0.0054,
       "n_patients": 511,
       "n_sites": 11
     }

@@ -2,6 +2,9 @@
 
 *Status: preliminary, preprint in preparation.*
 
+> [!NOTE]
+> **Version Notice (2026-10-02):** The original release tag `v1.0` was removed due to a nested zip artifact triggering antivirus warnings, and results are undergoing formal correction. Historical v1.0 artifacts from commit `177c723` are permanently preserved in [`results/archive_v1.0/`](results/archive_v1.0/). Corrected analyses ship as `v1.1`. See [`DEVIATIONS.md`](DEVIATIONS.md) and [`RELEASE_NOTES.md`](RELEASE_NOTES.md).
+
 [![CI](https://github.com/Vikhram-S/kirc-site-heldout-survival/actions/workflows/ci.yml/badge.svg)](https://github.com/Vikhram-S/kirc-site-heldout-survival/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Python: 3.12](https://img.shields.io/badge/python-3.12-blue.svg)](https://www.python.org/downloads/release/python-3120/)
@@ -24,23 +27,24 @@ Every number below is programmatically computed and registered in [`results/numb
 | Endpoint / Analysis | Random Stratified CV (25 Folds) | Site-Held-Out CV (25 Folds) | Comparison / Notes |
 |:---|:---:|:---:|:---|
 | **$C(M_0)$ (Clinical Only)** | 0.751 [0.737, 0.767] | 0.734 [0.725, 0.744] | Baseline Cox model (age, sex, stage) |
-| **$C(M_1)$ (Clinical + RNA)** | 0.755 [0.741, 0.772] | 0.739 [0.727, 0.753] | Top 500 RNA genes (elastic-net penalized) |
-| **Primary $\Delta C = C(M_1) - C(M_0)$** | **+0.0041** [-0.0004, 0.0084] | **+0.0054** [0.0001, 0.0114] | $\Delta\Delta C = -0.0013$ |
-| **Secondary Uno $\Delta C$ (3-year)** | +0.0011 | +0.0007 | IPCW-adjusted concordance |
-| **Secondary Uno $\Delta C$ (5-year)** | +0.0043 | +0.0058 | IPCW-adjusted concordance |
+| **$C(M_1)$ (Clinical + RNA)** | 0.775 [0.761, 0.791] | 0.764 [0.756, 0.774] | Top 500 RNA genes (elastic-net penalized, ~18-20 active features) |
+| **Primary $\Delta C = C(M_1) - C(M_0)$** | **+0.0237** [0.0163, 0.0301] | **+0.0305** [0.0272, 0.0339] | $\Delta\Delta C = -0.0068$ |
+| **Secondary Uno $\Delta C$ (3-year)** | +0.0207 | +0.0287 | IPCW-adjusted concordance |
+| **Secondary Uno $\Delta C$ (5-year)** | +0.0250 | +0.0307 | IPCW-adjusted concordance |
+| **IBS & Calibration Curves** | *Not Run* | *Not Run* | Pre-specified exploratory endpoints omitted |
 
 ### Negative Controls & Methodological Diagnostics
 - **Site-Only Survival Model:** Mean $C = 0.6539$. Center identity alone carries notable survival signal, indicating site-correlated patient prognostic differences.
-- **RNA $\to$ Site Batch Classifier:** Accuracy = 29.2% (vs. 26.8% majority class baseline across 11 evaluable site classes), confirming mild batch/site signal in transcriptomic profiles.
+- **RNA $\to$ Site Batch Classifier:** Accuracy = 29.2% (vs. 27.8% majority class baseline across 11 evaluable site classes), confirming mild batch/site signal in transcriptomic profiles.
 - **Shuffled-Label Control:** Mean $C = 0.5008$, confirming valid null calibration.
-- **Leakage Canary Demonstration:** When gene pre-selection was performed on the entire cohort prior to cross-validation partitioning, apparent C-index artificially inflated to $C = 0.6728$, illustrating the magnitude of methodological leakage optimism.
+- **Leakage Canary Demonstration:** Direct comparison on the identical model architecture showed that pre-split feature selection produced an apparent $C = 0.6728$, compared to $C = 0.6617$ under properly nested train-fold selection ($+0.0111$ artificial leakage inflation).
 
 ### Sensitivity Analyses
-- **Top 100 Genes:** Random $\Delta C = +0.0045$, Site-held-out $\Delta C = +0.0047$.
-- **Top 1000 Genes:** Random $\Delta C = +0.0041$, Site-held-out $\Delta C = +0.0054$.
-- **Excluding Tiny Sites ($<5$ patients):** Random $\Delta C = +0.0018$, Site-held-out $\Delta C = +0.0054$ ($N=511$, 11 sites).
+- **Top 100 Genes:** Random $\Delta C = +0.0192$, Site-held-out $\Delta C = +0.0221$.
+- **Top 1000 Genes:** Random $\Delta C = +0.0211$, Site-held-out $\Delta C = +0.0257$.
+- **Excluding Tiny Sites ($<5$ patients):** Random $\Delta C = +0.0316$, Site-held-out $\Delta C = +0.0354$ ($N=511$, 11 sites).
 
-**Conclusion:** The incremental prognostic value of bulk transcriptomics over standard clinical covariates was negligible across both randomized and site-held-out validation regimes. Center-held-out splitting did not reveal an optimism drop relative to random splits, because transcriptomic features provided negligible incremental discrimination in either setting.
+**Conclusion:** Under the corrected regularized multimodal model with active transcriptomic feature selection (~18-20 nonzero RNA features per fold), bulk RNA-seq yielded modest incremental prognostic value over baseline clinical variables in both randomized and site-held-out validation regimes ($\Delta C = +0.0237$ vs. $+0.0305$). Site-held-out cross-validation did not reveal an optimism drop relative to randomized cross-validation ($\Delta\Delta C = -0.0068$), indicating that the modest molecular prognostic signal generalized similarly across acquisition sites.
 
 ## Data
 - **Source:** TCGA Kidney Renal Clear Cell Carcinoma (TCGA-KIRC) cohort via UCSC Xena (GDC Hub).

@@ -1,0 +1,26 @@
+﻿{
+  "rna_seq": {
+    "filename": "TCGA-KIRC.star_counts.tsv.gz",
+    "url": "https://gdc-hub.s3.us-east-1.amazonaws.com/download/TCGA-KIRC.star_counts.tsv.gz",
+    "description": "TCGA-KIRC STAR counts (log2(count+1)) from UCSC Xena GDC hub",
+    "sha256": "5fcad9eef397c32b03d130ddcae7e9f5a2e4f83b7e7efc7cd3e634fdef80302b",
+    "size_bytes": 71515022,
+    "access_date": "2026-10-01 14:51:25 UTC"
+  },
+  "clinical": {
+    "filename": "TCGA-KIRC.clinical.tsv.gz",
+    "url": "https://gdc-hub.s3.us-east-1.amazonaws.com/download/TCGA-KIRC.clinical.tsv.gz",
+    "description": "TCGA-KIRC GDC clinical phenotype matrix",
+    "sha256": "0ad39ca22e50264cdcd8f2b6fc386f44eefd0c3e4794fea5799587e96689271b",
+    "size_bytes": 156680,
+    "access_date": "2026-10-01 14:51:25 UTC"
+  },
+  "survival": {
+    "filename": "TCGA-KIRC.survival.tsv.gz",
+    "url": "https://gdc-hub.s3.us-east-1.amazonaws.com/download/TCGA-KIRC.survival.tsv.gz",
+    "description": "TCGA-KIRC curated overall survival endpoints",
+    "sha256": "504fc3ff66b46e01423dafef423e1e5db87a2e9f052035b13907f997cf8e491c",
+    "size_bytes": 6404,
+    "access_date": "2026-10-01 14:51:25 UTC"
+  }
+}

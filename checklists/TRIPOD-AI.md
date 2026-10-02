@@ -24,7 +24,7 @@ Adherence checklist for the TRIPOD-AI (Transparent Reporting of a multivariable 
 | Missing data | 10a | Describe handling of missing data in predictors and outcomes. | Methods | Exclude zero/negative OS; training fold imputation for predictors. |
 | Model development | 10b | Specify ML/AI algorithms, hyperparameter tuning, and feature selection. | Methods | Elastic-net Cox and clinical Cox, variance selection, inner CV. |
 | Validation | 10c | Specify validation scheme (random repeated CV vs site-grouped CV). | Methods | Repeated Stratified K-Fold vs Repeated StratifiedGroupKFold on TSS code. |
-| Performance metrics | 10d | Specify performance measures (discrimination, calibration). | Methods | Harrell C, Uno C, paired ΔC, IBS at 3 and 5 years. |
+| Performance metrics | 10d | Specify performance measures (discrimination, calibration). | Methods | Harrell C, Uno C, paired ΔC (IBS/calibration curves exploratory, not run). |
 | **Results** | | | | |
 | Participants | 13a | Describe flow of participants and baseline characteristics. | Results | Descriptive site summary table (n, events, stage, age, follow-up). |
 | Model performance | 16 | Present performance metrics with confidence intervals. | Results | Empirical paired ΔC distributions with clustered bootstrap CIs. |

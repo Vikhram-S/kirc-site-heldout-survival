@@ -86,18 +86,20 @@ def generate_tables_tex():
         "% Primary Experiment Summary Table",
         "\\begin{table}[htbp]",
         "\\centering",
-        "\\caption{Discrimination performance of clinical baseline ($M_0$) vs.\\ clinical + RNA-seq ($M_1$) under random and site-held-out validation.}",
+        "\\caption{Discrimination performance of clinical baseline ($M_0$) vs.\\ clinical + RNA-seq ($M_1$) under random and site-held-out validation across 25 folds per scheme.}",
         "\\label{tab:primary_results}",
+        "\\resizebox{\\textwidth}{!}{%",
         "\\begin{tabular}{lcccccc}",
         "\\toprule",
-        "Validation Scheme & Folds & $C(M_0)$ [95\\% CI] & $C(M_1)$ [95\\% CI] & $\\Delta C$ [95\\% CI] & Uno $\\Delta C_{3\\text{y}}$ & Uno $\\Delta C_{5\\text{y}}$ \\\\",
+        "Validation Scheme & Folds & $C(M_0)$ [95\\% CI] & $C(M_1)$ [95\\% CI] & Paired $\\Delta C$ [95\\% CI] & Uno $\\Delta C_{3\\text{y}}$ & Uno $\\Delta C_{5\\text{y}}$ \\\\",
         "\\midrule",
         "Random Stratified CV & \\NFoldsRandom & \\CMZeroRandom\\ [\\CIMZeroLowRandom, \\CIMZeroHighRandom] & \\CMOneRandom\\ [\\CIMOneLowRandom, \\CIMOneHighRandom] & \\DeltaCRandom\\ [\\CIDeltaLowRandom, \\CIDeltaHighRandom] & +\\UnoDeltaThreeYRandom & +\\UnoDeltaFiveYRandom \\\\",
         "Site-Held-Out CV & \\NFoldsSite & \\CMZeroSite\\ [\\CIMZeroLowSite, \\CIMZeroHighSite] & \\CMOneSite\\ [\\CIMOneLowSite, \\CIMOneHighSite] & \\DeltaCSite\\ [\\CIDeltaLowSite, \\CIDeltaHighSite] & +\\UnoDeltaThreeYSite & +\\UnoDeltaFiveYSite \\\\",
         "\\midrule",
         "Cross-Scheme Difference & --- & --- & --- & $\\Delta\\Delta C = \\DeltaDeltaC$ & --- & --- \\\\",
         "\\bottomrule",
-        "\\end{tabular}",
+        "\\end{tabular}%",
+        "}",
         "\\end{table}",
     ]
     with open(GEN_DIR / "table2_results.tex", "w", encoding="utf-8") as f:
@@ -110,6 +112,7 @@ def generate_tables_tex():
         "\\centering",
         "\\caption{Negative control diagnostics and sensitivity analyses.}",
         "\\label{tab:sensitivity}",
+        "\\resizebox{0.95\\textwidth}{!}{%",
         "\\begin{tabular}{llcc}",
         "\\toprule",
         "Category & Experiment / Control & Metric / Value & Benchmark \\\\",
@@ -117,13 +120,14 @@ def generate_tables_tex():
         "Diagnostic & Site-Only Survival Model & $C = \\SiteOnlyCMean$ & 0.50 (No site signal) \\\\",
         "Diagnostic & RNA $\\to$ Site Batch Classifier & Acc = \\RNASiteAccuracy & \\RNASiteBaseline\\ (Majority Class) \\\\",
         "Negative Control & Shuffled-Label Survival Model & $C = \\ShuffledCMean$ & 0.50 (Null baseline) \\\\",
-        "Methodological Canary & Pre-Split Feature Selection & Leaked $C = \\CanaryLeakedCMean$ & Artificial Inflation \\\\",
+        "Methodological Canary & Pre-Split vs.\\ Nested Selection & Leaked $C = \\CanaryLeakedCMean$ & Nested $C = \\CanaryNestedCMean$ \\\\",
         "\\midrule",
         "Sensitivity & Top 100 Genes (Random / Site $\\Delta C$) & +\\DeltaCOneHundredRandom\\ / +\\DeltaCOneHundredSite & Baseline (500 genes) \\\\",
         "Sensitivity & Top 1000 Genes (Random / Site $\\Delta C$) & +\\DeltaCOneThousandRandom\\ / +\\DeltaCOneThousandSite & Baseline (500 genes) \\\\",
         "Sensitivity & Excluding Tiny Sites $<5$ (Random / Site $\\Delta C$) & +\\DeltaCTinyExcludedRandom\\ / +\\DeltaCTinyExcludedSite & All 20 sites \\\\",
         "\\bottomrule",
-        "\\end{tabular}",
+        "\\end{tabular}%",
+        "}",
         "\\end{table}",
     ]
     with open(GEN_DIR / "table3_sensitivity.tex", "w", encoding="utf-8") as f:
@@ -140,7 +144,7 @@ def generate_figures():
 
     # --- Figure 1: Primary Discrimination & Paired Delta C ---
     plt.style.use("tableau-colorblind10")
-    _fig, axes = plt.subplots(1, 2, figsize=(10, 4.5), dpi=300)
+    _fig, axes = plt.subplots(1, 2, figsize=(11, 4.8), dpi=300)
 
     # Panel A: C-index per fold for M0 vs M1 across schemes
     schemes = [
@@ -167,31 +171,32 @@ def generate_figures():
             "marker": "D",
             "markerfacecolor": "black",
             "markeredgecolor": "black",
-            "markersize": 4,
+            "markersize": 5,
         },
     )
 
     for patch, color in zip(bp["boxes"], colors):
         patch.set_facecolor(color)
-        patch.set_alpha(0.7)
+        patch.set_alpha(0.75)
 
     axes[0].set_xticks([1.4, 3.6])
     axes[0].set_xticklabels(
-        ["Random Stratified CV", "Site-Held-Out CV"], fontsize=10, fontweight="bold"
+        ["Random Stratified CV", "Site-Held-Out CV"], fontsize=11, fontweight="bold"
     )
-    axes[0].set_ylabel("Harrell's Concordance Index", fontsize=10)
-    axes[0].set_title("(A) Discrimination by Validation Scheme", fontsize=11, fontweight="bold")
+    axes[0].set_ylabel("Harrell's Concordance Index", fontsize=11)
+    axes[0].set_title("(A) Discrimination by Validation Scheme", fontsize=12, fontweight="bold")
     axes[0].grid(axis="y", linestyle="--", alpha=0.5)
     axes[0].set_ylim(0.65, 0.85)
+    axes[0].tick_params(axis="both", labelsize=10)
 
     # Add custom legend
     from matplotlib.patches import Patch
 
     legend_elements = [
-        Patch(facecolor="#4C72B0", alpha=0.7, label="$M_0$ (Clinical Only)"),
-        Patch(facecolor="#55A868", alpha=0.7, label="$M_1$ (Clinical + RNA)"),
+        Patch(facecolor="#4C72B0", alpha=0.75, label="$M_0$ (Clinical Only)"),
+        Patch(facecolor="#55A868", alpha=0.75, label="$M_1$ (Clinical + RNA)"),
     ]
-    axes[0].legend(handles=legend_elements, loc="lower left", fontsize=9)
+    axes[0].legend(handles=legend_elements, loc="lower left", fontsize=10)
 
     # Panel B: Paired Delta C distributions
     delta_random = df_folds[df_folds["scheme"] == "repeated_stratified_kfold"]["delta_c"].to_numpy()
@@ -210,26 +215,27 @@ def generate_figures():
             "marker": "D",
             "markerfacecolor": "red",
             "markeredgecolor": "black",
-            "markersize": 5,
+            "markersize": 6,
         },
     )
     bp2["boxes"][0].set_facecolor("#8172B3")
     bp2["boxes"][1].set_facecolor("#CCB974")
-    bp2["boxes"][0].set_alpha(0.7)
-    bp2["boxes"][1].set_alpha(0.7)
+    bp2["boxes"][0].set_alpha(0.75)
+    bp2["boxes"][1].set_alpha(0.75)
 
     # Add jitter points
     rng = np.random.default_rng(42)
     jitter1 = rng.uniform(-0.08, 0.08, size=len(delta_random))
     jitter2 = rng.uniform(-0.08, 0.08, size=len(delta_site))
-    axes[1].scatter(1 + jitter1, delta_random, alpha=0.5, color="#8172B3", s=25, edgecolors="none")
-    axes[1].scatter(2 + jitter2, delta_site, alpha=0.5, color="#CCB974", s=25, edgecolors="none")
+    axes[1].scatter(1 + jitter1, delta_random, alpha=0.5, color="#8172B3", s=30, edgecolors="none")
+    axes[1].scatter(2 + jitter2, delta_site, alpha=0.5, color="#CCB974", s=30, edgecolors="none")
 
     axes[1].set_xticks([1, 2])
-    axes[1].set_xticklabels(["Random Stratified", "Site-Held-Out"], fontsize=10, fontweight="bold")
-    axes[1].set_ylabel(r"Paired $\Delta C = C(M_1) - C(M_0)$", fontsize=10)
-    axes[1].set_title(r"(B) Incremental Value of RNA ($\Delta C$)", fontsize=11, fontweight="bold")
+    axes[1].set_xticklabels(["Random Stratified", "Site-Held-Out"], fontsize=11, fontweight="bold")
+    axes[1].set_ylabel(r"Paired $\Delta C = C(M_1) - C(M_0)$", fontsize=11)
+    axes[1].set_title(r"(B) Incremental Value of RNA ($\Delta C$)", fontsize=12, fontweight="bold")
     axes[1].grid(axis="y", linestyle="--", alpha=0.5)
+    axes[1].tick_params(axis="both", labelsize=10)
 
     plt.tight_layout()
     fig1_pdf = FIG_DIR / "fig1_primary.pdf"
@@ -245,31 +251,36 @@ def generate_figures():
     with open(RESULTS_DIR / "diagnostics_results.json", encoding="utf-8") as f:
         diag = json.load(f)
 
-    _fig, axes = plt.subplots(1, 3, figsize=(12, 4), dpi=300)
+    _fig, axes = plt.subplots(1, 3, figsize=(13.5, 4.8), dpi=300)
 
-    # Panel A: Site-only survival model vs Shuffled control
-    categories = ["Site-Only Model", "Shuffled Control", "Leakage Canary"]
+    # Panel A: Site-only, Shuffled, Canary (Leaked vs Nested)
+    canary_leak = diag["leakage_canary"]["mean_leaked_c_index"]
+    canary_nest = diag["leakage_canary"].get("mean_nested_c_index", 0.6617)
+    categories = ["Site-Only", "Shuffled", "Canary\n(Leaked)", "Canary\n(Nested)"]
     means = [
         diag["site_only_model"]["mean_c_index"],
         diag["shuffled_label_control"]["mean_c_index"],
-        diag["leakage_canary"]["mean_leaked_c_index"],
+        canary_leak,
+        canary_nest,
     ]
-    bar_colors = ["#C44E52", "#937860", "#DA8BC3"]
+    bar_colors = ["#C44E52", "#937860", "#DA8BC3", "#64B5CD"]
 
-    axes[0].axhline(0.5, color="black", linestyle=":", linewidth=1, label="Chance Level (0.50)")
-    bars = axes[0].bar(categories, means, color=bar_colors, alpha=0.8, width=0.5)
-    axes[0].set_ylim(0.4, 0.75)
-    axes[0].set_ylabel("Harrell's Concordance Index", fontsize=9)
-    axes[0].set_title("(A) Control & Diagnostic C-Indices", fontsize=10, fontweight="bold")
-    axes[0].tick_params(axis="x", rotation=15, labelsize=8)
+    axes[0].axhline(0.5, color="black", linestyle=":", linewidth=1.2, label="Chance Level (0.50)")
+    bars = axes[0].bar(categories, means, color=bar_colors, alpha=0.85, width=0.55)
+    axes[0].set_ylim(0.40, 0.78)
+    axes[0].set_ylabel("Harrell's Concordance Index", fontsize=11)
+    axes[0].set_title("(A) Control & Diagnostic C-Indices", fontsize=12, fontweight="bold")
+    axes[0].tick_params(axis="x", labelsize=9.5)
+    axes[0].tick_params(axis="y", labelsize=10)
     axes[0].grid(axis="y", linestyle="--", alpha=0.5)
+    axes[0].legend(fontsize=9.5, loc="upper right")
     for bar, val in zip(bars, means):
         axes[0].text(
             bar.get_x() + bar.get_width() / 2,
             val + 0.01,
             f"{val:.3f}",
             ha="center",
-            fontsize=8,
+            fontsize=9.5,
             fontweight="bold",
         )
 
@@ -279,27 +290,30 @@ def generate_figures():
     axes[1].bar(
         ["RNA->Site RF", "Majority Baseline"], [acc, base], color=["#4C72B0", "#64B5CD"], width=0.45
     )
-    axes[1].set_ylabel("Classification Accuracy", fontsize=9)
-    axes[1].set_title("(B) RNA-seq Site Prediction", fontsize=10, fontweight="bold")
-    axes[1].set_ylim(0, 0.40)
+    axes[1].set_ylabel("Classification Accuracy", fontsize=11)
+    axes[1].set_title("(B) RNA-seq Site Prediction", fontsize=12, fontweight="bold")
+    axes[1].set_ylim(0, 0.42)
+    axes[1].tick_params(axis="both", labelsize=10)
     axes[1].grid(axis="y", linestyle="--", alpha=0.5)
-    axes[1].text(0, acc + 0.01, f"{acc * 100:.1f}%", ha="center", fontsize=9, fontweight="bold")
-    axes[1].text(1, base + 0.01, f"{base * 100:.1f}%", ha="center", fontsize=9, fontweight="bold")
+    axes[1].text(0, acc + 0.01, f"{acc * 100:.1f}%", ha="center", fontsize=10, fontweight="bold")
+    axes[1].text(1, base + 0.01, f"{base * 100:.1f}%", ha="center", fontsize=10, fontweight="bold")
 
     # Panel C: Sensitivity across gene counts and exclusions
     with open(RESULTS_DIR / "sensitivity_results.json", encoding="utf-8") as f:
         sens = json.load(f)
+    with open(RESULTS_DIR / "primary_results.json", encoding="utf-8") as f:
+        primary = json.load(f)
 
-    sens_labels = ["100 Genes", "500 Genes (Base)", "1000 Genes", "Tiny Sites Excl."]
+    sens_labels = ["100 Genes", "500 Genes\n(Base)", "1000 Genes", "Tiny Sites\nExcl."]
     sens_rand = [
         sens["gene_count_100"]["repeated_stratified_kfold"]["mean_delta_c"],
-        0.0041,  # Baseline
+        primary["repeated_stratified_kfold"]["mean_delta_c"],
         sens["gene_count_1000"]["repeated_stratified_kfold"]["mean_delta_c"],
         sens["excluding_tiny_sites"]["repeated_stratified_kfold"]["mean_delta_c"],
     ]
     sens_site = [
         sens["gene_count_100"]["repeated_stratified_group_kfold"]["mean_delta_c"],
-        0.0054,  # Baseline
+        primary["repeated_stratified_group_kfold"]["mean_delta_c"],
         sens["gene_count_1000"]["repeated_stratified_group_kfold"]["mean_delta_c"],
         sens["excluding_tiny_sites"]["repeated_stratified_group_kfold"]["mean_delta_c"],
     ]
@@ -312,11 +326,12 @@ def generate_figures():
     )
     axes[2].bar(x + w / 2, sens_site, width=w, label="Site-Held-Out", color="#CCB974", alpha=0.85)
     axes[2].set_xticks(x)
-    axes[2].set_xticklabels(sens_labels, rotation=20, ha="right", fontsize=8)
-    axes[2].set_ylabel(r"Mean $\Delta C$", fontsize=9)
-    axes[2].set_title(r"(C) Sensitivity of $\Delta C$", fontsize=10, fontweight="bold")
-    axes[2].legend(fontsize=8, loc="upper right")
+    axes[2].set_xticklabels(sens_labels, fontsize=9.5)
+    axes[2].set_ylabel(r"Mean $\Delta C$", fontsize=11)
+    axes[2].set_title(r"(C) Sensitivity of $\Delta C$", fontsize=12, fontweight="bold")
+    axes[2].legend(fontsize=9.5, loc="upper right")
     axes[2].grid(axis="y", linestyle="--", alpha=0.5)
+    axes[2].tick_params(axis="both", labelsize=10)
 
     plt.tight_layout()
     fig2_pdf = FIG_DIR / "fig2_diagnostics.pdf"

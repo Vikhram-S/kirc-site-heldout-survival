@@ -46,7 +46,10 @@ Developing multivariable prognostic models that incorporate molecular profiling 
 
 When prognostic models are assessed via standard random cross-validation, observations from the same collection site are shared across training and testing partitions. If molecular measurements reflect site-specific signatures, random splitting may permit algorithms to exploit center-correlated features, yielding performance estimates that fail to generalize to newly observed clinical institutions.
 
-To rigorously address this methodological concern, we registered a frozen protocol to investigate whether the incremental prognostic value of bulk RNA-seq over clinical covariates ($\Delta C$) is smaller under site-held-out validation than under randomized validation in clear cell renal cell carcinoma (TCGA-KIRC).
+To rigorously address this methodological concern, we pre-specified a frozen protocol in a version-controlled repository to investigate whether the incremental prognostic value of bulk RNA-seq over clinical covariates ($\Delta C$) is smaller under site-held-out validation than under randomized validation in clear cell renal cell carcinoma (TCGA-KIRC).
+
+\subsection{Related Work}
+Developing prognostic scores from high-throughput molecular data has a long history of replication challenges. Herrmann et al.~\citep{herrmann2020benchmark} benchmarked survival prediction algorithms across multi-omics datasets and demonstrated that regularized transcriptomic models rarely outperform well-curated clinical predictors when evaluated with rigorous re-sampling. Wissel et al.~\citep{wissel2023survboard} introduced SurvBoard, standardizing evaluation across multi-omics cancer studies and highlighting the widespread risk of subtle information leakage during feature filtering and pre-processing. In computational pathology and multi-center genomics, Howard et al.~\citep{howard2021site} demonstrated that institutional artifacts—ranging from tissue fixation protocols to staining and scanner variances—frequently correlate with clinical variables and can lead predictive algorithms to learn site-specific confounders rather than genuine biological signals. Our study builds on these foundations by formally testing whether site-held-out evaluation eliminates putative transcriptomic gains in TCGA-KIRC under a pre-specified protocol.
 
 \section{Methods}
 
@@ -57,7 +60,7 @@ Primary solid tumor (sample type 01) records for TCGA-KIRC were extracted from U
 Two nested models were evaluated:
 \begin{enumerate}
     \item \textbf{Clinical Baseline Model ($M_0$):} A Cox proportional hazards model utilizing standardized age and one-hot encoded sex and stage. A slight ridge penalty ($\alpha = 10^{-4}$) was applied for numerical stability using \texttt{scikit-survival} \citep{polsterl2020scikit}.
-    \item \textbf{Multimodal Incremental Model ($M_1$):} A combined model preserving clinical covariates as unpenalized predictors (penalty factor $10^{-4}$) alongside the top 500 highest-variance RNA-seq features regularized via an elastic net penalty ($l_1\text{-ratio} = 0.5$). Feature variance ranking and scaling were fitted strictly on the training partition of each fold to avoid data leakage. Optimal regularization strength $\alpha$ was selected via inner 3-fold cross-validation on the training set.
+    \item \textbf{Multimodal Incremental Model ($M_1$):} A combined model preserving clinical covariates under light shrinkage (penalty factor $0.01$) alongside the top 500 highest-variance RNA-seq features regularized via an elastic net penalty ($l_1\text{-ratio} = 0.5$). Feature variance ranking and scaling were fitted strictly on the training partition of each fold to avoid data leakage. The candidate alpha regularization path was computed dynamically from candidate RNA features, and optimal regularization strength $\alpha$ was selected via inner 3-fold cross-validation on the training set.
 \end{enumerate}
 
 \subsection{Validation Schemes}
@@ -76,7 +79,15 @@ To test for potential artifacts, four control analyses were pre-specified:
     \item \textbf{Site-Only Model:} Fitting survival models using only center identity indicators to measure baseline prognostic information inherent to collection site.
     \item \textbf{RNA $\to$ Site Classifier:} A random forest classifier predicting center identity from transcriptomic profiles to assess site-correlated batch effects.
     \item \textbf{Shuffled-Label Control:} Permuting survival targets independently to confirm that models collapse to chance discrimination ($C \approx 0.50$).
-    \item \textbf{Leakage Canary Demonstration:} Intentionally performing univariate gene selection on the full dataset prior to cross-validation partitioning, demonstrating the magnitude of artificial performance inflation.
+    \item \textbf{Leakage Canary Demonstration:} Evaluating a paired comparison between unnested univariate feature selection (performed on the full dataset prior to partitioning) and strictly nested within-fold selection, quantifying the magnitude of artificial performance inflation.
+\end{enumerate}
+
+\subsection{Protocol Deviations and Methodological Refinements}
+Following protocol pre-specification, all methodological adjustments were logged with date and justification in the project repository (\texttt{DEVIATIONS.md}):
+\begin{enumerate}
+    \item \textbf{Regularization Grid Derivation:} In initial package configurations, setting clinical penalty factors to $10^{-4}$ inflated the internal maximum alpha threshold in \texttt{scikit-survival} by $10^4$, causing all RNA coefficients to be shrunken to zero across all grid points. We resolved this by calculating the penalty path directly from candidate RNA features with a clinical penalty factor of $0.01$. A positive control experiment confirmed that planted prognostic transcriptomic signal is robustly detected under this specification ($C = 0.813$ vs.\ $0.532$ for clinical alone).
+    \item \textbf{Partition Structure in Repeated Grouped CV:} Due to finite combinatorial assignments of 11 large sites across 5 folds, repeated grouped CV yielded 7 distinct partitions across 5 seeds. As documented in repository audits, deterministic Leave-One-Group-Out (LOGO) cross-validation and Nadeau-Bengio corrected repeated-CV variance estimators provide complementary inference.
+    \item \textbf{Leakage Canary Two-Arm Contrast:} The leakage canary was refined from an unnested single-point check into a two-condition contrast comparing unnested versus nested feature selection.
 \end{enumerate}
 
 \input{generated/table2_results.tex}
@@ -105,8 +116,8 @@ Table~\ref{tab:sensitivity} and Figure~\ref{fig:diagnostics} display the diagnos
 \begin{itemize}
     \item \textbf{Site Prognostic Confounding:} The site-only survival model yielded an average concordance index of $C = \SiteOnlyCMean$, demonstrating that tissue source center identity alone carries non-trivial survival information.
     \item \textbf{Transcriptomic Site Prediction:} The random forest classifier predicted center identity from RNA features with an accuracy of $\RNASiteAccuracy$, exceeding the majority class baseline of $\RNASiteBaseline$.
-    \item \textbf{Permutation Control:} Shuffling survival targets resulted in an average concordance index of $C = \ShuffledCMean$, confirming correct null calibration.
-    \item \textbf{Leakage Canary:} When feature selection was performed on the entire cohort prior to cross-validation splitting, the apparent RNA-only concordance index inflated to $C = \CanaryLeakedCMean$, illustrating how subtle pre-split data leakage produces artificial prognostic signal.
+    \item \textbf{Permutation Control:} Shuffling survival targets resulted in an average concordance index of $C = \ShuffledCMean$, confirming chance-level null discrimination.
+    \item \textbf{Leakage Canary:} When feature selection was performed on the entire cohort prior to cross-validation splitting, the apparent RNA-only concordance index inflated to $C = \CanaryLeakedCMean$, compared to $C = 0.6617$ under strictly nested selection (leakage inflation $\Delta C = +0.0111$), illustrating how pre-split data leakage produces artificial prognostic signal.
 \end{itemize}
 
 \input{generated/table3_sensitivity.tex}
@@ -114,7 +125,7 @@ Table~\ref{tab:sensitivity} and Figure~\ref{fig:diagnostics} display the diagnos
 \begin{figure}[htbp]
 \centering
 \includegraphics[width=0.98\textwidth]{figures/fig2_diagnostics.pdf}
-\caption{(A) Concordance indices for control experiments: site-only model, shuffled-label control, and leakage canary. (B) Multi-class prediction of tissue source site from RNA features versus majority baseline. (C) Sensitivity of mean $\Delta C$ across gene subset sizes and sample exclusions.}
+\caption{(A) Concordance indices for control experiments: site-only model, shuffled-label control, nested vs.\ leaked feature selection canary. (B) Multi-class prediction of tissue source site from RNA features versus majority baseline. (C) Sensitivity of mean $\Delta C$ across gene subset sizes and sample exclusions.}
 \label{fig:diagnostics}
 \end{figure}
 
@@ -125,11 +136,11 @@ Varying the number of candidate RNA features yielded consistent conclusions. Whe
 In this pre-specified study, we investigated whether the incremental discrimination of transcriptomic features over standard clinical predictors is attenuated when models are evaluated on unseen clinical centers. Contrary to the initial hypothesis that site-held-out validation would unmask an optimism drop relative to randomized splits ($\Delta\Delta C > 0$), we observed that bulk RNA-seq provided essentially zero incremental discrimination over standard clinical variables in \textit{both} validation schemes ($\Delta C = +\DeltaCRandom$ vs.\ $+\DeltaCSite$).
 
 Our diagnostic controls shed light on the multi-center structure of TCGA-KIRC:
-First, collection center identity itself carried noticeable prognostic association ($C = \SiteOnlyCMean$), likely reflecting differences in regional referral patterns, surgical timing, or patient demographics.
+First, collection center identity itself exhibited measurable survival association ($C = \SiteOnlyCMean$), consistent with differences in regional referral patterns, surgical timing, or patient demographics across contributing hospitals.
 Second, machine learning classifiers could weakly discern acquisition site from gene expression profiles ($\RNASiteAccuracy$ vs.\ $\RNASiteBaseline$).
-However, because penalized transcriptomic regression failed to identify a robust prognostic signal beyond age and stage, site-specific features did not create an artificial performance boost in random splits.
+However, because regularized transcriptomic models yielded negligible predictive contribution beyond age and stage, site-specific features were not observed to confer an incremental performance advantage in either validation setting.
 
-Finally, our leakage canary experiment highlights the danger of methodological leakage in high-dimensional genomic modeling. Unsupervised and supervised pre-filtering across the entire dataset prior to partitioning artificially elevated the apparent C-index to $\CanaryLeakedCMean$, a phenomenon that has historically contributed to overoptimistic claims in the molecular biomarker literature \citep{wissel2023survboard}.
+Finally, our leakage canary experiment highlights the danger of methodological leakage in high-dimensional genomic modeling. Unnested pre-filtering across the entire dataset prior to partitioning artificially elevated the apparent C-index from $0.662$ to $\CanaryLeakedCMean$, a phenomenon that has historically contributed to overoptimistic claims in the molecular biomarker literature \citep{wissel2023survboard}.
 
 \section{Limitations}
 This investigation has several limitations:

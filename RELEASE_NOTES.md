@@ -1,6 +1,30 @@
-# Release v1.0: Pre-Specified Re-Evaluation of Transcriptomic Prognostic Value Under Site-Held-Out Validation in TCGA-KIRC
+# Release Notes & Version History
 
-*Status: preliminary, preprint in preparation.*
+## Release v1.1 (Current Corrected Release)
+*Status: preliminary, preprint in preparation (2026-10-02).*
+
+### Executive Summary & Corrected Findings
+- **Model Specification Fix:** Resolved the `scikit-survival` alpha regularization path inflation defect where setting clinical penalty factor to $10^{-4}$ scaled alpha $10^4$ too high, forcing 0 nonzero RNA features across all folds in v1.0. In v1.1, the regularization path is computed directly from candidate RNA features (with clinical penalty factor $0.01$), yielding active transcriptomic selection (~18-20 nonzero genes per fold) and confirmed by positive control planted-signal testing ($C = 0.8130 > 0.5320$).
+- **Primary Endpoint:** Baseline clinical discrimination was $C(M_0) = 0.751$ [0.737, 0.767] (random) and $0.734$ [0.725, 0.744] (site-held-out). Multimodal discrimination reached $C(M_1) = 0.775$ [0.761, 0.791] (random) and $0.764$ [0.756, 0.774] (site-held-out).
+- **Incremental Gain:** Paired incremental gain was $\Delta C = +0.0237$ [0.0163, 0.0301] under random CV vs. $+0.0305$ [0.0272, 0.0339] under site-held-out CV ($\Delta\Delta C = -0.0068$). Site-held-out validation did not reveal an optimism drop relative to randomized splits.
+- **Two-Arm Leakage Canary:** Controlled contrast between strictly nested within-fold selection ($C = 0.6617$) and unnested whole-dataset selection ($C = 0.6728$), demonstrating $+0.0111$ artificial leakage inflation.
+- **Audit & Transparency:** Full audit trail documented in [`DEVIATIONS.md`](DEVIATIONS.md). All 20 claims in [`CLAIMS.md`](CLAIMS.md) verified against rerun output files in `results/`. Historical v1.0 files permanently archived in [`results/archive_v1.0/`](results/archive_v1.0/).
+
+### Complete Quantitative Results (v1.1 Rerun)
+| Metric | Random Stratified CV (25 Folds) | Site-Held-Out CV (25 Folds) | Difference / 95% Bootstrap CI |
+|:---|:---:|:---:|:---:|
+| **Baseline Clinical Model $C(M_0)$** | 0.751 [0.737, 0.767] | 0.734 [0.725, 0.744] | Age, sex, stage (Cox PH) |
+| **Multimodal Model $C(M_1)$** | 0.775 [0.761, 0.791] | 0.764 [0.756, 0.774] | Clinical + Top 500 RNA (Elastic-Net, active RNA) |
+| **Paired Incremental Gain $\Delta C$** | **+0.0237** [0.0163, 0.0301] | **+0.0305** [0.0272, 0.0339] | **$\Delta\Delta C = -0.0068$** |
+
+---
+
+> [!WARNING]
+> **Notice on v1.0 Tag Deletion and v1.1 Correction (2026-10-02):**
+> The GitHub release tag `v1.0` was removed because it contained a nested zip file (`paper_overleaf.zip`) that triggered automated antivirus/security warnings, and the empirical results are undergoing correction. Commit `177c723` (the original `v1.0` commit) is permanently preserved in git history. All outputs from `177c723` are archived under [`results/archive_v1.0/`](results/archive_v1.0/). Corrected work ships as `v1.1`. See [`DEVIATIONS.md`](DEVIATIONS.md) for full audit history.
+
+## Historical Archive: Release v1.0 (Commit 177c723)
+*Status: superseded by v1.1 (archived).*
 
 This release establishes an end-to-end reproducible, pre-registered computational investigation evaluating whether the incremental prognostic performance of bulk RNA sequencing over standard clinical covariates survives site-held-out cross-validation in clear cell renal cell carcinoma (TCGA-KIRC).
 
@@ -26,13 +50,13 @@ This release establishes an end-to-end reproducible, pre-registered computationa
 ### 2. Secondary Endpoints (IPCW-Adjusted Uno's Concordance Index)
 - **3-Year Landmark Horizon:** Uno $\Delta C = +0.0011$ (Random) vs. $+0.0007$ (Site-Held-Out)
 - **5-Year Landmark Horizon:** Uno $\Delta C = +0.0043$ (Random) vs. $+0.0058$ (Site-Held-Out)
-- **External Replication Feasibility:** Pre-specified cohort screening rules identified TCGA-HNSC and TCGA-LUSC as eligible for multi-cohort extension.
+- **IBS & Calibration Curves:** Not run (pre-specified exploratory endpoints omitted; evaluation restricted strictly to Uno's C).
 
 ### 3. Negative Controls & Methodological Diagnostics
 - **Site-Only Survival Model:** Mean $C = 0.6539$. Center identity alone carries notable survival signal, confirming non-trivial center-correlated patient differences in TCGA-KIRC.
 - **RNA $\to$ Site Batch Classifier:** 29.15% accuracy vs. 26.84% majority class baseline across 11 evaluable site classes, confirming mild batch/site signal in transcriptomic profiles.
 - **Shuffled-Label Negative Control:** Mean $C = 0.5008$, confirming absence of residual target leakage or algorithmic bias.
-- **Leakage Canary Demonstration:** Intentionally selecting candidate genes on the entire cohort prior to cross-validation partitioning produced an apparent $C = 0.6728$ with pure RNA, demonstrating the magnitude of artificial performance inflation caused by pre-split leakage.
+- **Leakage Canary Demonstration:** Direct comparison on the identical model architecture showed that pre-split feature selection produced an apparent $C = 0.6728$, compared to $C = 0.6617$ under properly nested train-fold selection ($+0.0111$ artificial leakage inflation).
 
 ### 4. Sensitivity Analyses
 - **Top 100 Highest-Variance Genes:** Random $\Delta C = +0.0045$, Site $\Delta C = +0.0047$.

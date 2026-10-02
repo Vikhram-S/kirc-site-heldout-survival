@@ -1,4 +1,4 @@
-{
+﻿{
   "rules": {
     "min_patients": 300,
     "min_events": 80,

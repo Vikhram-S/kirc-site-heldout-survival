@@ -1,9 +1,9 @@
-{
+﻿{
   "n_patients": 529,
   "n_events": 173,
   "event_rate": 0.327,
   "n_sites": 20,
-  "n_rna_matched": 529,
+  "n_rna_matched": 0,
   "missingness": {
     "age": 0,
     "gender": 0,

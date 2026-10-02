@@ -93,12 +93,6 @@ def run_secondary_endpoints(df_results, df_full, y):
             "n_folds_evaluated": len(uno_3y_m0),
         }
 
-    # Include replication cohorts status
-    rep_path = RESULTS_DIR / "replication_eligibility.json"
-    if rep_path.exists():
-        with open(rep_path, encoding="utf-8") as f:
-            secondary["replication_cohorts"] = json.load(f)
-
     with open(RESULTS_DIR / "secondary_results.json", "w", encoding="utf-8") as f:
         json.dump(secondary, f, indent=2)
     print("  Saved secondary results to results/secondary_results.json")
@@ -178,9 +172,14 @@ def run_diagnostics(df_full, y, df_clean, df_rna, seeds):
         "demonstration_label": canary["demonstration_label"],
         "mean_leaked_c_index": round(canary["mean_leaked_c_index"], 4),
         "std_leaked_c_index": round(canary["std_leaked_c_index"], 4),
+        "mean_nested_c_index": round(canary["mean_nested_c_index"], 4),
+        "std_nested_c_index": round(canary["std_nested_c_index"], 4),
+        "leakage_inflation_delta_c": round(canary["leakage_inflation_delta_c"], 4),
         "note": canary["note"],
     }
-    print(f"  Leakage Canary Leaked C: {canary['mean_leaked_c_index']:.4f}")
+    print(
+        f"  Leakage Canary Leaked C: {canary['mean_leaked_c_index']:.4f} vs Nested C: {canary['mean_nested_c_index']:.4f} (Inflation Delta: {canary['leakage_inflation_delta_c']:+.4f})"
+    )
 
     with open(RESULTS_DIR / "diagnostics_results.json", "w", encoding="utf-8") as f:
         json.dump(diag_results, f, indent=2)
@@ -339,6 +338,8 @@ def update_numbers_json(secondary, diag, sens):
     numbers["RNASiteBaseline"] = str(diag["rna_to_site_classifier"]["majority_class_baseline"])
     numbers["ShuffledCMean"] = str(diag["shuffled_label_control"]["mean_c_index"])
     numbers["CanaryLeakedCMean"] = str(diag["leakage_canary"]["mean_leaked_c_index"])
+    numbers["CanaryNestedCMean"] = str(diag["leakage_canary"].get("mean_nested_c_index", "N/A"))
+    numbers["CanaryInflationDelta"] = str(diag["leakage_canary"].get("leakage_inflation_delta_c", "N/A"))
 
     # Sensitivity
     if "gene_count_100" in sens:

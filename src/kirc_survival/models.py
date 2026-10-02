@@ -115,6 +115,7 @@ class ClinicalPlusRNACoxnetModel:
         self.best_alpha_: float | None = None
         self.best_coef_: np.ndarray | None = None
         self.fitted_model_: CoxnetSurvivalAnalysis | None = None
+        self.nonzero_rna_count_: int = 0
 
     def _extract_rna_df(self, X: pd.DataFrame) -> pd.DataFrame:
         ensg_cols = [c for c in X.columns if str(c).startswith("ENSG")]
@@ -154,20 +155,38 @@ class ClinicalPlusRNACoxnetModel:
         n_clin_features = dummy_clin.shape[1]
         n_rna_features = n_features - n_clin_features
 
-        # Penalty factor: 1e-4 for clinical (essentially unpenalized but numerically stable), 1.0 for RNA
-        penalty_factor = np.concatenate(
-            [
-                np.full(n_clin_features, 1e-4, dtype=float),
-                np.ones(n_rna_features, dtype=float),
-            ]
-        )
+        if n_rna_features > 0:
+            # Derive alpha sequence from RNA features to span from 0 to dense RNA coefficients
+            try:
+                cox_rna = CoxnetSurvivalAnalysis(
+                    l1_ratio=self.l1_ratio,
+                    n_alphas=self.n_alphas,
+                    alpha_min_ratio=0.01,
+                    max_iter=300,
+                )
+                cox_rna.fit(X_features[:, n_clin_features:], y)
+                alphas = cox_rna.alphas_
+            except (ValueError, RuntimeError, ArithmeticError):
+                alphas = None
 
-        # Base model with penalty factor
+            # Penalty factor: 0.01 for clinical (light stabilization), 1.0 for RNA
+            penalty_factor = np.concatenate(
+                [
+                    np.full(n_clin_features, 0.01, dtype=float),
+                    np.ones(n_rna_features, dtype=float),
+                ]
+            )
+        else:
+            alphas = None
+            penalty_factor = None
+
+        # Base model with penalty factor and RNA-derived alpha grid
         base_coxnet = CoxnetSurvivalAnalysis(
             l1_ratio=self.l1_ratio,
             penalty_factor=penalty_factor,
-            n_alphas=self.n_alphas,
-            max_iter=300,
+            alphas=alphas,
+            n_alphas=len(alphas) if alphas is not None else self.n_alphas,
+            max_iter=500,
         )
         base_coxnet.fit(X_features, y)
         alphas = base_coxnet.alphas_
@@ -186,7 +205,7 @@ class ClinicalPlusRNACoxnetModel:
                         l1_ratio=self.l1_ratio,
                         alphas=alphas,
                         penalty_factor=penalty_factor,
-                        max_iter=300,
+                        max_iter=500,
                     )
                     fold_model.fit(X_tr, y_tr)
                     for a_idx, alpha in enumerate(alphas):
@@ -201,9 +220,18 @@ class ClinicalPlusRNACoxnetModel:
             best_alpha_idx = int(np.argmax(cv_scores))
             self.best_alpha_ = float(alphas[best_alpha_idx])
         else:
+            best_alpha_idx = 0
             self.best_alpha_ = float(alphas[0])
 
         self.fitted_model_ = base_coxnet
+
+        # Log nonzero RNA count at best alpha
+        if n_rna_features > 0 and hasattr(base_coxnet, "coef_"):
+            coef_at_best = base_coxnet.coef_[:, best_alpha_idx]
+            self.nonzero_rna_count_ = int(np.sum(coef_at_best[n_clin_features:] != 0))
+        else:
+            self.nonzero_rna_count_ = 0
+
         return self
 
     def predict(self, X: pd.DataFrame) -> np.ndarray:

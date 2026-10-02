@@ -56,8 +56,9 @@ class RNAToSiteClassifier:
         site_counts = pd.Series(sites).value_counts()
         valid_sites = set(site_counts[site_counts >= n_splits].index)
         mask = np.isin(sites, list(valid_sites))
+        indices = np.where(mask)[0]
 
-        X_filtered = X_rna.iloc[mask]
+        X_filtered = X_rna.iloc[indices].reset_index(drop=True)
         y_filtered = sites[mask]
 
         skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=42)
@@ -71,7 +72,7 @@ class RNAToSiteClassifier:
             preds = self.pipeline.predict(X_te)
             accuracies.append(accuracy_score(y_te, preds))
 
-        majority_baseline = float(site_counts.max() / len(sites))
+        majority_baseline = float(pd.Series(y_filtered).value_counts().max() / len(y_filtered))
 
         return {
             "mean_cv_accuracy": float(np.mean(accuracies)),
@@ -137,25 +138,55 @@ def demonstrate_leakage_canary(
     leaked_gene_indices = np.argsort(corrs)[-top_k_leaked:]
     leaked_genes = [X_rna.columns[i] for i in leaked_gene_indices]
 
-    # Evaluate simple linear model on leaked features across cross-validation
+    # Evaluate same model on leaked vs properly nested feature selection
     skf = StratifiedKFold(n_splits=n_splits, shuffle=True, random_state=seed)
     leaked_c_indices = []
+    nested_c_indices = []
 
     for train_idx, test_idx in skf.split(X_rna, y["Status"]):
-        X_tr = X_rna.iloc[train_idx][leaked_genes]
         y_tr = y[train_idx]
-        X_te = X_rna.iloc[test_idx][leaked_genes]
         y_te = y[test_idx]
 
-        cph = CoxPHSurvivalAnalysis(alpha=1e-2)
-        cph.fit(X_tr, y_tr)
-        preds = cph.predict(X_te)
-        c_idx = concordance_index_censored(y_te["Status"], y_te["Survival_in_days"], preds)[0]
-        leaked_c_indices.append(c_idx)
+        # 1. Leaked: pre-split selection on full cohort
+        X_tr_leak = X_rna.iloc[train_idx][leaked_genes]
+        X_te_leak = X_rna.iloc[test_idx][leaked_genes]
+        cph_leak = CoxPHSurvivalAnalysis(alpha=1e-2)
+        cph_leak.fit(X_tr_leak, y_tr)
+        preds_leak = cph_leak.predict(X_te_leak)
+        c_leak = concordance_index_censored(y_te["Status"], y_te["Survival_in_days"], preds_leak)[0]
+        leaked_c_indices.append(c_leak)
+
+        # 2. Properly nested: selection performed strictly on training fold
+        t_tr = y_tr["Survival_in_days"].astype(float)
+        X_tr_arr = X_rna.iloc[train_idx].to_numpy(dtype=float)
+        t_tr_std = (t_tr - np.mean(t_tr)) / (np.std(t_tr) + 1e-8)
+        stds_tr = np.std(X_tr_arr, axis=0)
+        val_tr = stds_tr > 1e-6
+        means_tr = np.mean(X_tr_arr, axis=0)
+        corrs_tr = np.zeros(X_tr_arr.shape[1])
+        if np.any(val_tr):
+            X_norm_tr = (X_tr_arr[:, val_tr] - means_tr[val_tr]) / stds_tr[val_tr]
+            corrs_tr[val_tr] = np.abs(np.mean(X_norm_tr * t_tr_std[:, np.newaxis], axis=0))
+        nested_idx = np.argsort(corrs_tr)[-top_k_leaked:]
+        nested_genes = [X_rna.columns[i] for i in nested_idx]
+
+        X_tr_nest = X_rna.iloc[train_idx][nested_genes]
+        X_te_nest = X_rna.iloc[test_idx][nested_genes]
+        cph_nest = CoxPHSurvivalAnalysis(alpha=1e-2)
+        cph_nest.fit(X_tr_nest, y_tr)
+        preds_nest = cph_nest.predict(X_te_nest)
+        c_nest = concordance_index_censored(y_te["Status"], y_te["Survival_in_days"], preds_nest)[0]
+        nested_c_indices.append(c_nest)
+
+    mean_leak = float(np.mean(leaked_c_indices))
+    mean_nest = float(np.mean(nested_c_indices))
 
     return {
         "demonstration_label": "LEAKAGE_CANARY_DEMONSTRATION_ONLY",
-        "mean_leaked_c_index": float(np.mean(leaked_c_indices)),
+        "mean_leaked_c_index": mean_leak,
         "std_leaked_c_index": float(np.std(leaked_c_indices)),
-        "note": "Optimistically biased due to pre-split feature selection on whole dataset.",
+        "mean_nested_c_index": mean_nest,
+        "std_nested_c_index": float(np.std(nested_c_indices)),
+        "leakage_inflation_delta_c": float(mean_leak - mean_nest),
+        "note": "Direct comparison of pre-split leaked feature selection vs properly nested selection on the identical model architecture.",
     }

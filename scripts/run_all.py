@@ -64,7 +64,7 @@ def load_and_prepare_data():
     )
 
     print(f"  Cohort: {len(df_clean)} patients, {int(df_clean['event'].sum())} events")
-    return df_full, y, df_clean
+    return df_full, y, df_clean, list(df_rna.columns)
 
 
 def run_primary_experiment(df_full, y, cfg):
@@ -135,13 +135,14 @@ def run_primary_experiment(df_full, y, cfg):
                 "uno_m0_5y": round(uno_m0_5y, 6) if uno_m0_5y is not None else None,
                 "uno_m1_5y": round(uno_m1_5y, 6) if uno_m1_5y is not None else None,
                 "best_alpha": m1.best_alpha_,
+                "n_nonzero_rna": getattr(m1, "nonzero_rna_count_", 0),
                 "elapsed_s": round(elapsed, 2),
             }
             records.append(rec)
 
             if (i + 1) % 5 == 0 or i == 0:
                 print(
-                    f"  Fold {i + 1}/{n_folds}: C_M0={c_m0:.4f} C_M1={c_m1:.4f} dC={delta_c:+.4f} ({elapsed:.1f}s)"
+                    f"  Fold {i + 1}/{n_folds}: C_M0={c_m0:.4f} C_M1={c_m1:.4f} dC={delta_c:+.4f} (RNA non-zero: {rec['n_nonzero_rna']}, {elapsed:.1f}s)"
                 )
 
     return pd.DataFrame(records)
@@ -155,6 +156,7 @@ def summarize_primary(df_results):
         mean_m0 = float(sub["c_m0"].mean())
         mean_m1 = float(sub["c_m1"].mean())
         mean_delta = float(sub["delta_c"].mean())
+        mean_nonzero = float(sub["n_nonzero_rna"].mean()) if "n_nonzero_rna" in sub.columns else 0.0
 
         cis = cluster_bootstrap_ci(sub, n_bootstraps=1000, seed=42)
 
@@ -162,6 +164,7 @@ def summarize_primary(df_results):
             "mean_c_m0": round(mean_m0, 4),
             "mean_c_m1": round(mean_m1, 4),
             "mean_delta_c": round(mean_delta, 4),
+            "mean_nonzero_rna": round(mean_nonzero, 2),
             "ci_m0_95": [round(x, 4) for x in cis["m0"]],
             "ci_m1_95": [round(x, 4) for x in cis["m1"]],
             "ci_delta_95": [round(x, 4) for x in cis["delta"]],
@@ -209,10 +212,10 @@ def main():
     print(f"Status: {cfg['study']['status']}")
 
     # Step 1: Load data
-    df_full, y, df_clean = load_and_prepare_data()
+    df_full, y, df_clean, rna_samples = load_and_prepare_data()
 
     # Step 2: Descriptive QC (saves to results/)
-    qc_summary, site_df = compute_descriptive_qc(df_clean)
+    qc_summary, site_df = compute_descriptive_qc(df_clean, rna_samples=rna_samples)
     with open(RESULTS_DIR / "descriptive_qc.json", "w", encoding="utf-8") as f:
         json.dump(qc_summary, f, indent=2)
     site_df.to_csv(RESULTS_DIR / "site_summary.csv", index=False)
