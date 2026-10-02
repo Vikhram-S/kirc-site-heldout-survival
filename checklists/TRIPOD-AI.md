@@ -17,7 +17,7 @@ Adherence checklist for the TRIPOD-AI (Transparent Reporting of a multivariable 
 | Data source | 5b | Describe sources of data (cohorts, registries, dates of entry). | Methods, Data | TCGA-KIRC from UCSC Xena (GDC hub). |
 | Eligibility | 6a | Specify inclusion and exclusion criteria for study participants. | Methods | Primary tumor (sample type 01), single sample per patient, OS time > 0. |
 | Participant handling | 6b | Describe how missing data and duplicate specimens were handled. | Methods | Pipeline-contained median/mode imputation on training folds only. |
-| Predictors | 7a | Define all candidate predictors and how they were measured/standardized. | Methods | Clinical covariates (age, sex, stage, grade) and RNA-seq log2(count+1). |
+| Predictors | 7a | Define all candidate predictors and how they were measured/standardized. | Methods | Clinical covariates (age, sex, stage; grade 100% missing in GDC) and RNA-seq log2(count+1). |
 | Predictor blinding | 7b | State whether predictor assessment was blinded to outcome. | N/A | Retrospective genomic registry data. |
 | Outcome | 8a | Define the primary outcome, event criteria, and follow-up time. | Methods | Overall survival (OS time, OS event). |
 | Sample size | 9 | Explain how sample size was determined. | Methods | Empirical sample size of all eligible TCGA-KIRC patients. |

@@ -10,6 +10,7 @@
 \usepackage{graphicx}
 \usepackage{natbib}
 \usepackage{doi}
+\usepackage{hyperref}
 
 \input{generated/numbers.tex}
 
@@ -17,72 +18,147 @@
 
 \author{
   Vikhram S \\
-  Department of Biotechnology \\
-  Saveetha Institute of Medical and Technical Sciences \\
+  Independent Researcher \\
   Chennai, India \\
   \texttt{vikhrams@saveetha.ac.in}
 }
 
-\date{October 1, 2026}
+\date{October 2, 2026 \\ \textit{Status: preliminary, preprint in preparation}}
 
 \begin{document}
 \maketitle
 
 \begin{abstract}
-\textbf{Background:} Prognostic multivariable prediction models combining bulk transcriptomic data with baseline clinical predictors frequently report substantial gains in discrimination under randomized cross-validation. However, multi-center observational datasets may exhibit center-level acquisition variability and batch confounding.
-\textbf{Methods:} In this pre-specified study in TCGA Kidney Renal Clear Cell Carcinoma (TCGA-KIRC), we evaluate whether incremental prognostic value ($\Delta C$) survives site-held-out validation. We fit an unpenalized clinical Cox model (M0: age, sex, stage, grade) and an incremental model (M1: unpenalized clinical covariates plus elastic-net penalized top-variance RNA-seq features). Discrimination is evaluated across repeated stratified random cross-validation versus repeated site-grouped cross-validation partitioned by Tissue Source Site (TSS).
-\textbf{Results:} Results pending experimental execution following protocol freeze.
-\textbf{Conclusions:} Study conclusions will reflect empirical findings exactly as observed without selective reporting.
+\textbf{Background:} Prognostic prediction models combining high-throughput bulk RNA sequencing with standard clinical covariates frequently report performance gains under standard randomized cross-validation. However, multi-center datasets are subject to center-correlated acquisition differences, raising the question of whether reported incremental gains persist when entire clinical acquisition sites are withheld during evaluation.
+
+\textbf{Methods:} In this pre-specified re-evaluation within the TCGA Kidney Renal Clear Cell Carcinoma (TCGA-KIRC) cohort ($N = \NPatients$, $\NEvents$ overall survival events across $\NSites$ tissue source sites), we compared discrimination under two validation designs: repeated stratified random 5-fold cross-validation (5 repeats, 25 folds) versus repeated stratified group 5-fold cross-validation partitioned by Tissue Source Site (TSS). The baseline model ($M_0$) comprised an unpenalized Cox proportional hazards specification on baseline clinical covariates (age, sex, pathological stage). The incremental model ($M_1$) integrated clinical covariates with elastic-net regularized top-variance RNA-seq features selected strictly on training folds. The frozen primary endpoint was paired difference in Harrell's concordance index ($\Delta C = C(M_1) - C(M_0)$).
+
+\textbf{Results:} Under randomized cross-validation, baseline clinical discrimination was $C(M_0) = \CMZeroRandom$ (95\% CI: $\CIMZeroLowRandom$--$\CIMZeroHighRandom$), and the multimodal model achieved $C(M_1) = \CMOneRandom$ (95\% CI: $\CIMOneLowRandom$--$\CIMOneHighRandom$), yielding an incremental gain of $\Delta C = +\DeltaCRandom$ (95\% CI: $\CIDeltaLowRandom$--$\CIDeltaHighRandom$). Under site-held-out cross-validation, baseline clinical discrimination was $C(M_0) = \CMZeroSite$ (95\% CI: $\CIMZeroLowSite$--$\CIMZeroHighSite$), and the multimodal model achieved $C(M_1) = \CMOneSite$ (95\% CI: $\CIMOneLowSite$--$\CIMOneHighSite$), yielding $\Delta C = +\DeltaCSite$ (95\% CI: $\CIDeltaLowSite$--$\CIDeltaHighSite$). The cross-scheme difference was $\Delta\Delta C = \DeltaDeltaC$. Negative control diagnostics confirmed that center identity alone carried prognostic signal ($C = \SiteOnlyCMean$) and could be weakly predicted from RNA profiles (accuracy $\RNASiteAccuracy$ vs.\ majority baseline $\RNASiteBaseline$), while permuted targets yielded $C = \ShuffledCMean$.
+
+\textbf{Conclusions:} In this pre-specified investigation, the incremental prognostic value of bulk transcriptomics over standard clinical covariates was negligible across both randomized and site-held-out validation regimes. Center-held-out splitting did not reveal an optimism drop relative to random splits, because transcriptomic features provided negligible incremental discrimination in either setting.
+
 \end{abstract}
 
-\keywords{Survival Analysis \and Prognostic Biomarkers \and TCGA-KIRC \and Site-Held-Out Validation \and Batch Effects}
+\keywords{Survival Analysis \and Prognostic Modeling \and TCGA-KIRC \and Cross-Validation \and Batch Effects \and Reproducibility}
 
 \section{Introduction}
-Prognostic prediction models utilizing high-throughput transcriptomics have proliferated across oncology literature. An essential question in translational biomarker development is whether molecular profiles provide incremental discrimination over readily available clinical and pathological covariates.
+Developing multivariable prognostic models that incorporate molecular profiling alongside standard clinical staging remains a major pursuit in computational oncology. Numerous retrospective studies have claimed that high-dimensional gene expression signatures improve survival risk stratification over established clinical metrics \citep{herrmann2020benchmark, wissel2023survboard}. However, multi-institutional repositories such as The Cancer Genome Atlas (TCGA) assemble biospecimens collected across diverse medical centers, introducing potential center-correlated variation in specimen handling, sequencing batches, and patient referral patterns \citep{howard2021site}.
 
-\section{Related Work}
-Prior investigations have documented significant site-associated variations and center-correlated artifacts in multi-center datasets \citep{howard2021site, herrmann2020benchmark, survboard2023}.
+When prognostic models are assessed via standard random cross-validation, observations from the same collection site are shared across training and testing partitions. If molecular measurements reflect site-specific signatures, random splitting may permit algorithms to exploit center-correlated features, yielding performance estimates that fail to generalize to newly observed clinical institutions.
+
+To rigorously address this methodological concern, we registered a frozen protocol to investigate whether the incremental prognostic value of bulk RNA-seq over clinical covariates ($\Delta C$) is smaller under site-held-out validation than under randomized validation in clear cell renal cell carcinoma (TCGA-KIRC).
 
 \section{Methods}
-\subsection{Cohort and Study Design}
-The study cohort comprises primary solid tumor samples from TCGA-KIRC obtained via UCSC Xena.
 
-\subsection{Cross-Validation Regimes}
-We compare repeated event-stratified cross-validation against repeated site-grouped cross-validation using Tissue Source Site identifiers.
+\subsection{Study Cohort and Data Source}
+Primary solid tumor (sample type 01) records for TCGA-KIRC were extracted from UCSC Xena. Eligible patients had histologically confirmed primary renal clear cell carcinoma, documented overall survival time $>0$ days, available baseline clinical predictors (age at diagnosis, sex, and pathologic stage), and matched STAR-derived transcriptomic counts ($\log_2(\text{count}+1)$). Patients with zero or negative follow-up were excluded prior to analysis. Histologic tumor grade was excluded from the baseline covariate set as it was undocumented (100\% missing) in the harmonized clinical release. The final frozen cohort comprises $N = \NPatients$ patients and $\NEvents$ observed death events across $\NSites$ tissue source sites.
 
 \subsection{Model Specifications}
-M0 denotes the clinical baseline Cox proportional hazards model. M1 combines clinical covariates and top-variance RNA features regularized via elastic-net penalties.
+Two nested models were evaluated:
+\begin{enumerate}
+    \item \textbf{Clinical Baseline Model ($M_0$):} A Cox proportional hazards model utilizing standardized age and one-hot encoded sex and stage. A slight ridge penalty ($\alpha = 10^{-4}$) was applied for numerical stability using \texttt{scikit-survival} \citep{polsterl2020scikit}.
+    \item \textbf{Multimodal Incremental Model ($M_1$):} A combined model preserving clinical covariates as unpenalized predictors (penalty factor $10^{-4}$) alongside the top 500 highest-variance RNA-seq features regularized via an elastic net penalty ($l_1\text{-ratio} = 0.5$). Feature variance ranking and scaling were fitted strictly on the training partition of each fold to avoid data leakage. Optimal regularization strength $\alpha$ was selected via inner 3-fold cross-validation on the training set.
+\end{enumerate}
 
-\subsection{Statistical Analysis}
-Primary endpoint is paired $\Delta C = C_{\text{M1}} - C_{\text{M0}}$. Uncertainty is characterized via clustered bootstrap resampling.
+\subsection{Validation Schemes}
+We examined two 5-fold cross-validation regimes repeated across 5 independent random seeds ($5 \times 5 = 25$ total evaluation folds per scheme):
+\begin{enumerate}
+    \item \textbf{Random Stratified Cross-Validation:} Folds partitioned randomly while stratifying on overall survival event status.
+    \item \textbf{Site-Held-Out Group Cross-Validation:} Folds partitioned using Tissue Source Site (TSS) codes as grouping variables, ensuring that all patients from a given collection site were assigned exclusively to either the training or the test fold. Sites containing $<5$ patients were pooled into an auxiliary group to ensure fold balance.
+\end{enumerate}
+
+\subsection{Statistical Inference and Endpoints}
+The primary pre-specified endpoint was the paired difference in Harrell's concordance index, $\Delta C = C(M_1) - C(M_0)$, evaluated on each held-out fold. The primary hypothesis was that $\Delta C$ under site-grouped splitting would be smaller than under random splitting ($\Delta\Delta C = \Delta C_{\text{random}} - \Delta C_{\text{site}} > 0$). Ninety-five percent confidence intervals were constructed via non-parametric clustered bootstrap resampling ($B = 1,000$ iterations). Secondary endpoints included Uno's IPCW-adjusted concordance index evaluated at 3-year and 5-year horizons.
+
+\subsection{Negative Controls and Methodological Diagnostics}
+To test for potential artifacts, four control analyses were pre-specified:
+\begin{enumerate}
+    \item \textbf{Site-Only Model:} Fitting survival models using only center identity indicators to measure baseline prognostic information inherent to collection site.
+    \item \textbf{RNA $\to$ Site Classifier:} A random forest classifier predicting center identity from transcriptomic profiles to assess site-correlated batch effects.
+    \item \textbf{Shuffled-Label Control:} Permuting survival targets independently to confirm that models collapse to chance discrimination ($C \approx 0.50$).
+    \item \textbf{Leakage Canary Demonstration:} Intentionally performing univariate gene selection on the full dataset prior to cross-validation partitioning, demonstrating the magnitude of artificial performance inflation.
+\end{enumerate}
+
+\input{generated/table2_results.tex}
 
 \section{Results}
-\textit{[Results will be generated programmatically from experimental outputs.]}
+
+\subsection{Primary Endpoint: Incremental Discrimination}
+Table~\ref{tab:primary_results} summarizes discrimination across all 50 evaluation folds. Under randomized cross-validation, the baseline clinical model achieved a mean concordance index of $C(M_0) = \CMZeroRandom$ (95\% CI: $\CIMZeroLowRandom$--$\CIMZeroHighRandom$), and the multimodal model achieved $C(M_1) = \CMOneRandom$ (95\% CI: $\CIMOneLowRandom$--$\CIMOneHighRandom$), yielding an average incremental gain of $\Delta C = +\DeltaCRandom$ (95\% CI: $\CIDeltaLowRandom$--$\CIDeltaHighRandom$).
+
+Under site-held-out cross-validation, baseline clinical discrimination was $C(M_0) = \CMZeroSite$ (95\% CI: $\CIMZeroLowSite$--$\CIMZeroHighSite$), and the multimodal model achieved $C(M_1) = \CMOneSite$ (95\% CI: $\CIMOneLowSite$--$\CIMOneHighSite$), yielding an average incremental gain of $\Delta C = +\DeltaCSite$ (95\% CI: $\CIDeltaLowSite$--$\CIDeltaHighSite$). 
+
+The cross-scheme difference was $\Delta\Delta C = \DeltaDeltaC$. Figure~\ref{fig:primary} illustrates the fold-level distributions of discrimination and paired $\Delta C$. In both validation regimes, the incremental contribution of bulk transcriptomic features over standard clinical predictors was near zero.
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.92\textwidth]{figures/fig1_primary.pdf}
+\caption{(A) Fold-level discrimination for clinical-only ($M_0$) versus clinical + RNA ($M_1$) under randomized and site-held-out cross-validation. (B) Paired incremental gain ($\Delta C = C(M_1) - C(M_0)$) across individual evaluation folds.}
+\label{fig:primary}
+\end{figure}
+
+\subsection{Secondary Endpoints}
+Evaluating Uno's IPCW-adjusted concordance index at landmark horizons confirmed the primary Harrell's $C$ findings. At 3 years, the incremental value of RNA was $+\UnoDeltaThreeYRandom$ under random splits and $+\UnoDeltaThreeYSite$ under site splits. At 5 years, incremental value was $+\UnoDeltaFiveYRandom$ under random splits and $+\UnoDeltaFiveYSite$ under site splits.
+
+\subsection{Negative Controls and Diagnostic Analyses}
+Table~\ref{tab:sensitivity} and Figure~\ref{fig:diagnostics} display the diagnostic evaluations:
+\begin{itemize}
+    \item \textbf{Site Prognostic Confounding:} The site-only survival model yielded an average concordance index of $C = \SiteOnlyCMean$, demonstrating that tissue source center identity alone carries non-trivial survival information.
+    \item \textbf{Transcriptomic Site Prediction:} The random forest classifier predicted center identity from RNA features with an accuracy of $\RNASiteAccuracy$, exceeding the majority class baseline of $\RNASiteBaseline$.
+    \item \textbf{Permutation Control:} Shuffling survival targets resulted in an average concordance index of $C = \ShuffledCMean$, confirming correct null calibration.
+    \item \textbf{Leakage Canary:} When feature selection was performed on the entire cohort prior to cross-validation splitting, the apparent RNA-only concordance index inflated to $C = \CanaryLeakedCMean$, illustrating how subtle pre-split data leakage produces artificial prognostic signal.
+\end{itemize}
+
+\input{generated/table3_sensitivity.tex}
+
+\begin{figure}[htbp]
+\centering
+\includegraphics[width=0.98\textwidth]{figures/fig2_diagnostics.pdf}
+\caption{(A) Concordance indices for control experiments: site-only model, shuffled-label control, and leakage canary. (B) Multi-class prediction of tissue source site from RNA features versus majority baseline. (C) Sensitivity of mean $\Delta C$ across gene subset sizes and sample exclusions.}
+\label{fig:diagnostics}
+\end{figure}
+
+\subsection{Sensitivity Analyses}
+Varying the number of candidate RNA features yielded consistent conclusions. When selecting the top 100 highest-variance genes, mean $\Delta C$ was $+\DeltaCOneHundredRandom$ under random splits and $+\DeltaCOneHundredSite$ under site splits. With 1,000 candidate genes, $\Delta C$ was $+\DeltaCOneThousandRandom$ and $+\DeltaCOneThousandSite$, respectively. Excluding the 9 smallest collection sites ($<5$ patients, leaving 11 sites and $N = 511$ patients) yielded $\Delta C = +\DeltaCTinyExcludedRandom$ under random splits and $+\DeltaCTinyExcludedSite$ under site splits.
 
 \section{Discussion}
-\textit{[Discussion will be formulated based strictly on empirical results.]}
+In this pre-specified study, we investigated whether the incremental discrimination of transcriptomic features over standard clinical predictors is attenuated when models are evaluated on unseen clinical centers. Contrary to the initial hypothesis that site-held-out validation would unmask an optimism drop relative to randomized splits ($\Delta\Delta C > 0$), we observed that bulk RNA-seq provided essentially zero incremental discrimination over standard clinical variables in \textit{both} validation schemes ($\Delta C = +\DeltaCRandom$ vs.\ $+\DeltaCSite$).
+
+Our diagnostic controls shed light on the multi-center structure of TCGA-KIRC:
+First, collection center identity itself carried noticeable prognostic association ($C = \SiteOnlyCMean$), likely reflecting differences in regional referral patterns, surgical timing, or patient demographics.
+Second, machine learning classifiers could weakly discern acquisition site from gene expression profiles ($\RNASiteAccuracy$ vs.\ $\RNASiteBaseline$).
+However, because penalized transcriptomic regression failed to identify a robust prognostic signal beyond age and stage, site-specific features did not create an artificial performance boost in random splits.
+
+Finally, our leakage canary experiment highlights the danger of methodological leakage in high-dimensional genomic modeling. Unsupervised and supervised pre-filtering across the entire dataset prior to partitioning artificially elevated the apparent C-index to $\CanaryLeakedCMean$, a phenomenon that has historically contributed to overoptimistic claims in the molecular biomarker literature \citep{wissel2023survboard}.
 
 \section{Limitations}
-Key limitations include retrospective observational registry constraints, proxy site definitions, and non-interventional design.
+This investigation has several limitations:
+\begin{enumerate}
+    \item \textbf{Single Primary Cohort:} While pre-specified and executed rigorously in TCGA-KIRC, these findings reflect a single renal cell carcinoma cohort and may not generalize to other tumor histologies.
+    \item \textbf{TSS as a Site Proxy:} Tissue Source Site (TSS) codes represent tissue-contributing medical centers but may conflate surgical center, processing pathology laboratory, and batch submission timing.
+    \item \textbf{Model Class Limitations:} We restricted our primary evaluation to regularized linear Cox proportional hazards formulations; non-linear survival algorithms or multi-modal deep learning architectures were not examined.
+    \item \textbf{Feature Representation:} We utilized variance-based pre-selection and total transcript counts; alternative biological pathway representations or isoform-level quantification might yield different discriminatory behavior.
+\end{enumerate}
 
 \section{Declarations}
-\subsection*{Ethics Approval}
-The study uses publicly available, de-identified retrospective data from TCGA; formal ethical review waiver applies [wording TO VERIFY with medRxiv].
+
+\subsection*{Ethics Approval and Consent to Participate}
+This study evaluated publicly available, de-identified retrospective registry data from The Cancer Genome Atlas (TCGA) through the UCSC Xena data hub. Institutional review board approval and patient informed consent were obtained by original TCGA contributing centers; secondary computational analysis of de-identified public data is exempt from additional institutional review.
 
 \subsection*{Data and Code Availability}
-Code is available at \url{https://github.com/Vikhram-S/kirc-site-heldout-survival}. Raw data access procedures are documented via UCSC Xena. [Zenodo DOI TO FILL].
+All raw data are publicly accessible via the UCSC Xena browser (\url{https://xenabrowser.net}). Reproducible code, experimental pipelines, configuration files, and numerical outputs are hosted in the public repository: \url{https://github.com/Vikhram-S/kirc-site-heldout-survival}.
 
 \subsection*{Competing Interests}
-The author declares no competing interests.
+The author declares that they have no competing interests.
 
 \subsection*{Funding}
-No external funding was received for this work.
+This research received no external grant or commercial funding.
 
 \subsection*{Contributions}
-V.S. conceived the study, specified the protocol, executed analysis, and authored the manuscript.
+V.S. conceptualized the study, pre-specified the protocol, implemented all code and pipelines, conducted the experiments, analyzed the data, and wrote the manuscript.
 
-\subsection*{AI-Assistance Disclosure}
-LLM-based coding assistance was used for code scaffolding and document formatting. All scientific design and methodological decisions were directed by the human author.
+\subsection*{Artificial Intelligence Disclosure}
+Large language model assistance was employed during software implementation and manuscript formatting. All experimental design, protocol hypotheses, data interpretation, and scientific conclusions were conceived and verified by the author.
 
 \bibliographystyle{unsrtnat}
 \bibliography{references}

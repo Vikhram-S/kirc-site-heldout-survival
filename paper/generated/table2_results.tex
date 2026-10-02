@@ -1,0 +1,16 @@
+% Primary Experiment Summary Table
+\begin{table}[htbp]
+\centering
+\caption{Discrimination performance of clinical baseline ($M_0$) vs.\ clinical + RNA-seq ($M_1$) under random and site-held-out validation.}
+\label{tab:primary_results}
+\begin{tabular}{lcccccc}
+\toprule
+Validation Scheme & Folds & $C(M_0)$ [95\% CI] & $C(M_1)$ [95\% CI] & $\Delta C$ [95\% CI] & Uno $\Delta C_{3\text{y}}$ & Uno $\Delta C_{5\text{y}}$ \\
+\midrule
+Random Stratified CV & \NFoldsRandom & \CMZeroRandom\ [\CIMZeroLowRandom, \CIMZeroHighRandom] & \CMOneRandom\ [\CIMOneLowRandom, \CIMOneHighRandom] & \DeltaCRandom\ [\CIDeltaLowRandom, \CIDeltaHighRandom] & +\UnoDeltaThreeYRandom & +\UnoDeltaFiveYRandom \\
+Site-Held-Out CV & \NFoldsSite & \CMZeroSite\ [\CIMZeroLowSite, \CIMZeroHighSite] & \CMOneSite\ [\CIMOneLowSite, \CIMOneHighSite] & \DeltaCSite\ [\CIDeltaLowSite, \CIDeltaHighSite] & +\UnoDeltaThreeYSite & +\UnoDeltaFiveYSite \\
+\midrule
+Cross-Scheme Difference & --- & --- & --- & $\Delta\Delta C = \DeltaDeltaC$ & --- & --- \\
+\bottomrule
+\end{tabular}
+\end{table}
