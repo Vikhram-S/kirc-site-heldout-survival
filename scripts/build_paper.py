@@ -363,12 +363,28 @@ def compile_latex():
         print("pdflatex not found on system PATH. LaTeX source files generated and verified.")
 
 
+def create_overleaf_zip():
+    """Package paper directory into paper_overleaf.zip for direct Overleaf upload."""
+    import zipfile
+
+    zip_path = Path("paper_overleaf.zip")
+    excluded = {".aux", ".log", ".bbl", ".blg", ".out", ".toc", ".synctex.gz"}
+
+    with zipfile.ZipFile(zip_path, "w", zipfile.ZIP_DEFLATED) as z:
+        for f in PAPER_DIR.rglob("*"):
+            if f.is_file() and f.suffix not in excluded:
+                arcname = f.relative_to(PAPER_DIR)
+                z.write(f, arcname)
+    print(f"Generated {zip_path} for Overleaf upload.")
+
+
 def main():
     print("=== Building Paper Artifacts ===")
     generate_numbers_tex()
     generate_tables_tex()
     generate_figures()
     compile_latex()
+    create_overleaf_zip()
     print("=== Paper Build Complete ===")
 
 
