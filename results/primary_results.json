@@ -1,0 +1,44 @@
+{
+  "repeated_stratified_kfold": {
+    "mean_c_m0": 0.7514,
+    "mean_c_m1": 0.7555,
+    "mean_delta_c": 0.0041,
+    "ci_m0_95": [
+      0.7373,
+      0.7668
+    ],
+    "ci_m1_95": [
+      0.7409,
+      0.7722
+    ],
+    "ci_delta_95": [
+      -0.0004,
+      0.0084
+    ],
+    "n_folds": 25
+  },
+  "repeated_stratified_group_kfold": {
+    "mean_c_m0": 0.734,
+    "mean_c_m1": 0.7394,
+    "mean_delta_c": 0.0054,
+    "ci_m0_95": [
+      0.7246,
+      0.744
+    ],
+    "ci_m1_95": [
+      0.7269,
+      0.7534
+    ],
+    "ci_delta_95": [
+      0.0001,
+      0.0114
+    ],
+    "n_folds": 25
+  },
+  "cross_scheme": {
+    "delta_delta_c": -0.0013,
+    "delta_c_random": 0.0041,
+    "delta_c_site": 0.0054,
+    "hypothesis_direction": "dC_random <= dC_site"
+  }
+}

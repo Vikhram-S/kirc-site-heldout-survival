@@ -117,7 +117,12 @@ class ClinicalPlusRNACoxnetModel:
         self.fitted_model_: CoxnetSurvivalAnalysis | None = None
 
     def _extract_rna_df(self, X: pd.DataFrame) -> pd.DataFrame:
-        non_rna = set(self.clinical_cols).union({"sample", "patient_id", "site", "time", "event"})
+        ensg_cols = [c for c in X.columns if str(c).startswith("ENSG")]
+        if ensg_cols:
+            return X[ensg_cols]
+        non_rna = set(self.clinical_cols).union(
+            {"sample", "patient_id", "site", "time", "event", "grade", "index"}
+        )
         rna_cols = [c for c in X.columns if c not in non_rna]
         return X[rna_cols]
 
@@ -149,9 +154,12 @@ class ClinicalPlusRNACoxnetModel:
         n_clin_features = dummy_clin.shape[1]
         n_rna_features = n_features - n_clin_features
 
-        # Penalty factor: 0 for clinical, 1 for RNA
+        # Penalty factor: 1e-4 for clinical (essentially unpenalized but numerically stable), 1.0 for RNA
         penalty_factor = np.concatenate(
-            [np.zeros(n_clin_features, dtype=float), np.ones(n_rna_features, dtype=float)]
+            [
+                np.full(n_clin_features, 1e-4, dtype=float),
+                np.ones(n_rna_features, dtype=float),
+            ]
         )
 
         # Base model with penalty factor
@@ -187,7 +195,7 @@ class ClinicalPlusRNACoxnetModel:
                             y_val["Status"], y_val["Survival_in_days"], pred
                         )[0]
                         cv_scores[a_idx] += score
-                except (ValueError, RuntimeError, IndexError):
+                except (ValueError, RuntimeError, IndexError, ArithmeticError):
                     continue
 
             best_alpha_idx = int(np.argmax(cv_scores))

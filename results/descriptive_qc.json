@@ -1,23 +1,23 @@
 {
-  "n_patients": 533,
-  "n_events": 175,
-  "event_rate": 0.3283,
+  "n_patients": 529,
+  "n_events": 173,
+  "event_rate": 0.327,
   "n_sites": 20,
-  "n_rna_matched": 529,
+  "n_rna_matched": 0,
   "missingness": {
     "age": 0,
     "gender": 0,
     "stage": 3,
-    "grade": 533
+    "grade": 529
   },
   "follow_up_days": {
     "min_days": 2.0,
-    "median_days": 1186.0,
-    "mean_days": 1343.9887429643527,
+    "median_days": 1191.0,
+    "mean_days": 1343.9489603024574,
     "max_days": 4537.0
   },
   "age_years": {
-    "mean_years": 60.450281425891184,
+    "mean_years": 60.482041587901705,
     "median_years": 61.0,
     "min_years": 26.0,
     "max_years": 88.0
