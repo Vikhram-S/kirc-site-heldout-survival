@@ -1,0 +1,31 @@
+{
+  "site_only_model": {
+    "mean_c_index": 0.6539,
+    "std_c_index": 0.0455,
+    "ci_95": [
+      0.5739,
+      0.7357
+    ],
+    "n_folds": 25
+  },
+  "rna_to_site_classifier": {
+    "mean_cv_accuracy": 0.2915,
+    "std_cv_accuracy": 0.0289,
+    "majority_class_baseline": 0.2684,
+    "n_classes_evaluated": 11
+  },
+  "shuffled_label_control": {
+    "mean_c_index": 0.5008,
+    "std_c_index": 0.0822,
+    "ci_95": [
+      0.3658,
+      0.6459
+    ]
+  },
+  "leakage_canary": {
+    "demonstration_label": "LEAKAGE_CANARY_DEMONSTRATION_ONLY",
+    "mean_leaked_c_index": 0.6728,
+    "std_leaked_c_index": 0.0378,
+    "note": "Optimistically biased due to pre-split feature selection on whole dataset."
+  }
+}

@@ -87,19 +87,25 @@ def run_shuffled_label_control(
     y_train: np.ndarray,
     X_test: pd.DataFrame,
     y_test: np.ndarray,
+    n_permutations: int = 5,
     seed: int = 999,
 ) -> float:
     """Permute survival targets independently and evaluate Harrell's C."""
     rng = np.random.default_rng(seed)
-    y_train_shuffled = y_train.copy()
-    perm = rng.permutation(len(y_train))
-    y_train_shuffled["Status"] = y_train["Status"][perm]
-    y_train_shuffled["Survival_in_days"] = y_train["Survival_in_days"][perm]
+    c_indices = []
 
-    model.fit(X_train, y_train_shuffled)
-    preds = model.predict(X_test)
-    c_idx = concordance_index_censored(y_test["Status"], y_test["Survival_in_days"], preds)[0]
-    return float(c_idx)
+    for _ in range(n_permutations):
+        y_train_shuffled = y_train.copy()
+        perm = rng.permutation(len(y_train))
+        y_train_shuffled["Status"] = y_train["Status"][perm]
+        y_train_shuffled["Survival_in_days"] = y_train["Survival_in_days"][perm]
+
+        model.fit(X_train, y_train_shuffled)
+        preds = model.predict(X_test)
+        c_idx = concordance_index_censored(y_test["Status"], y_test["Survival_in_days"], preds)[0]
+        c_indices.append(c_idx)
+
+    return float(np.mean(c_indices))
 
 
 def demonstrate_leakage_canary(
@@ -111,11 +117,23 @@ def demonstrate_leakage_canary(
     seed: int = 42,
 ) -> dict[str, float]:
     """Demonstration of optimistic bias when feature selection is performed on full dataset prior to splitting.
+
     LABELED EXPLICITLY AS A DEMONSTRATION, NEVER A STUDY RESULT.
     """
-    # 1. Leakage: Compute univariate correlation with time on ENTIRE dataset before splitting
-    times = y["Survival_in_days"]
-    corrs = np.abs([np.corrcoef(X_rna[col], times)[0, 1] for col in X_rna.columns])
+    times = y["Survival_in_days"].astype(float)
+    X_rna_arr = X_rna.to_numpy(dtype=float)
+
+    # Safe correlation calculation avoiding zero-variance divisions
+    t_std = (times - np.mean(times)) / (np.std(times) + 1e-8)
+    col_stds = np.std(X_rna_arr, axis=0)
+    valid_cols = col_stds > 1e-6
+    col_means = np.mean(X_rna_arr, axis=0)
+
+    corrs = np.zeros(X_rna_arr.shape[1])
+    if np.any(valid_cols):
+        X_norm = (X_rna_arr[:, valid_cols] - col_means[valid_cols]) / col_stds[valid_cols]
+        corrs[valid_cols] = np.abs(np.mean(X_norm * t_std[:, np.newaxis], axis=0))
+
     leaked_gene_indices = np.argsort(corrs)[-top_k_leaked:]
     leaked_genes = [X_rna.columns[i] for i in leaked_gene_indices]
 

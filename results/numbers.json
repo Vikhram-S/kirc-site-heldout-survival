@@ -22,5 +22,20 @@
   "DeltaDeltaC": "-0.0013",
   "NPatients": "529",
   "NEvents": "173",
-  "NSites": "20"
+  "NSites": "20",
+  "UnoDelta3yRandom": "0.0011",
+  "UnoDelta5yRandom": "0.0043",
+  "UnoDelta3ySite": "0.0007",
+  "UnoDelta5ySite": "0.0058",
+  "SiteOnlyCMean": "0.6539",
+  "RNASiteAccuracy": "0.2915",
+  "RNASiteBaseline": "0.2684",
+  "ShuffledCMean": "0.5008",
+  "CanaryLeakedCMean": "0.6728",
+  "DeltaC100Random": "0.0045",
+  "DeltaC100Site": "0.0047",
+  "DeltaC1000Random": "0.0041",
+  "DeltaC1000Site": "0.0054",
+  "DeltaCTinyExcludedRandom": "0.0018",
+  "DeltaCTinyExcludedSite": "0.0054"
 }
