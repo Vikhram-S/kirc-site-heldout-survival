@@ -39,5 +39,21 @@
   "DeltaC1000Random": "0.0211",
   "DeltaC1000Site": "0.0257",
   "DeltaCTinyExcludedRandom": "0.0316",
-  "DeltaCTinyExcludedSite": "0.0354"
+  "DeltaCTinyExcludedSite": "0.0354",
+  "SENBRandom": "0.0098",
+  "CINBLowRandom": "0.0036",
+  "CINBHighRandom": "0.0438",
+  "SENBSite": "0.0046",
+  "CINBLowSite": "0.0209",
+  "CINBHighSite": "0.0401",
+  "CIDeltaDeltaLow": "-0.0441",
+  "CIDeltaDeltaHigh": "0.0178",
+  "NPartitionsGrouped": "7",
+  "LOGONGroups": "12",
+  "LOGONEvaluable": "11",
+  "LOGOCMZeroMean": "0.737",
+  "LOGOCMOneMean": "0.763",
+  "LOGODeltaCMean": "0.0267",
+  "LOGODeltaCPatientWeighted": "0.0258",
+  "LOGODeltaCEventWeighted": "0.0300"
 }

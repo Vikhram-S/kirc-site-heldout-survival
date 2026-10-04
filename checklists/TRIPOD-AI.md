@@ -6,7 +6,7 @@ Adherence checklist for the TRIPOD-AI (Transparent Reporting of a multivariable 
 
 | Section / Item | Item # | Description | Reported in Page/Section | Notes / Compliance |
 |---|---|---|---|---|
-| **Title** | 1 | Identify the study as developing and/or validating a multivariable prediction model, target population, and outcome. | Title | "Does the added prognostic value of RNA-seq over clinical variables survive site-held-out validation? A pre-specified re-evaluation in TCGA-KIRC" |
+| **Title** | 1 | Identify the study as developing and/or validating a multivariable prediction model, target population, and outcome. | Title | "Does the added prognostic value of RNA-seq over clinical variables survive site-held-out validation? A pre-specified re-evaluation with documented deviations in TCGA-KIRC" |
 | **Abstract** | 2 | Provide a structured summary (Background, Objectives, Methods, Results, Conclusions). | Abstract | Fully structured in preprint abstract. |
 | **Introduction** | | | | |
 | Background | 3a | Explain the medical/scientific context and rationale for the prediction model. | Introduction | Multi-omics prognostic models and site batch effects. |

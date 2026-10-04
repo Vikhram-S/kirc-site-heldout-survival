@@ -73,7 +73,7 @@ def verify_split_integrity(
     test_sites: np.ndarray | None = None,
     is_grouped: bool = False,
 ) -> tuple[bool, str]:
-    """Verify that there is no patient overlap, and for grouped splits, no site overlap."""
+    """Confirm that there is no patient overlap, and for grouped splits, no site overlap."""
     intersection = np.intersect1d(train_idx, test_idx)
     if len(intersection) > 0:
         return False, f"Patient index leakage: {len(intersection)} indices overlap."
@@ -83,4 +83,4 @@ def verify_split_integrity(
         if site_intersection:
             return False, f"Site leakage: sites {site_intersection} appear in both train and test."
 
-    return True, "Integrity verified"
+    return True, "Integrity traced to file"

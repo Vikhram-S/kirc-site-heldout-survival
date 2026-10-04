@@ -97,3 +97,131 @@ def cluster_bootstrap_ci(
             float(np.percentile(boot_delta, upper_pct)),
         ),
     }
+
+
+def compute_nadeau_bengio_ci(
+    differences: np.ndarray,
+    n_train: float,
+    n_test: float,
+    alpha: float = 0.05,
+) -> dict[str, float]:
+    """Compute Nadeau-Bengio corrected variance and t-based CI for repeated CV.
+
+    Reference:
+        Nadeau, C., & Bengio, Y. (2003). Inference for the Generalization Error.
+        Machine Learning, 52(3), 239-281. Eq. (11):
+        V_corr = (1 / J + n_test / n_train) * S^2
+    """
+    diffs = np.asarray(differences, dtype=float)
+    J = len(diffs)
+    if J < 2:
+        return {"mean": float(np.mean(diffs)), "se": np.nan, "ci_lower": np.nan, "ci_upper": np.nan}
+    d_bar = float(np.mean(diffs))
+    s2 = float(np.var(diffs, ddof=1))
+    v_corr = (1.0 / J + (float(n_test) / float(n_train))) * s2
+    se_nb = float(np.sqrt(max(0.0, v_corr)))
+    from scipy import stats
+
+    t_crit = float(stats.t.ppf(1.0 - alpha / 2.0, df=J - 1))
+    return {
+        "mean": d_bar,
+        "se": se_nb,
+        "ci_lower": d_bar - t_crit * se_nb,
+        "ci_upper": d_bar + t_crit * se_nb,
+    }
+
+
+def resample_delta_delta_c_ci(
+    df_random_oof: pd.DataFrame,
+    df_site_oof: pd.DataFrame,
+    n_bootstraps: int = 1000,
+    alpha: float = 0.05,
+    seed: int = 42,
+) -> dict[str, float | list[float]]:
+    """Compute resampling-based descriptive interval for DeltaDelta C respecting dependence.
+
+    Resamples patients with replacement for the random scheme, and cluster-resamples
+    sites with replacement (including all patients per sampled site) for the grouped scheme.
+    """
+    rng = np.random.default_rng(seed)
+
+    # Unique patients and sites
+    all_patients = np.array(df_random_oof["sample"].unique())
+    all_sites = np.array(df_site_oof["site"].unique())
+    n_pts = len(all_patients)
+    n_sts = len(all_sites)
+
+    # Pre-index by repeat and patient
+    repeats_rnd = sorted(df_random_oof["repeat_idx"].unique())
+    repeats_ste = sorted(df_site_oof["repeat_idx"].unique())
+
+    # Map repeat -> df indexed by sample
+    rnd_by_rep = {
+        r: df_random_oof[df_random_oof["repeat_idx"] == r].set_index("sample") for r in repeats_rnd
+    }
+    ste_by_rep = {r: df_site_oof[df_site_oof["repeat_idx"] == r] for r in repeats_ste}
+
+    boot_ddc = []
+    boot_dc_rnd = []
+    boot_dc_ste = []
+
+    for _ in range(n_bootstraps):
+        # 1. Resample patients for random scheme
+        sampled_pts = rng.choice(all_patients, size=n_pts, replace=True)
+
+        # Compute dC_random across repeats on resampled patients
+        rep_dc_rnd = []
+        for r in repeats_rnd:
+            sub = rnd_by_rep[r].loc[sampled_pts]
+            ev = sub["event"].to_numpy().astype(bool)
+            tm = sub["time"].to_numpy().astype(float)
+            if ev.sum() == 0:
+                continue
+            c0 = compute_harrell_c(ev, tm, sub["risk_m0"].to_numpy())
+            c1 = compute_harrell_c(ev, tm, sub["risk_m1"].to_numpy())
+            rep_dc_rnd.append(c1 - c0)
+
+        # 2. Resample sites for grouped scheme (cluster bootstrap)
+        sampled_sts = rng.choice(all_sites, size=n_sts, replace=True)
+
+        rep_dc_ste = []
+        for r in repeats_ste:
+            df_rep = ste_by_rep[r]
+            # Concatenate patients from each selected site cluster
+            site_parts = [df_rep[df_rep["site"] == s] for s in sampled_sts]
+            sub = pd.concat(site_parts, ignore_index=True)
+            ev = sub["event"].to_numpy().astype(bool)
+            tm = sub["time"].to_numpy().astype(float)
+            if ev.sum() == 0:
+                continue
+            c0 = compute_harrell_c(ev, tm, sub["risk_m0"].to_numpy())
+            c1 = compute_harrell_c(ev, tm, sub["risk_m1"].to_numpy())
+            rep_dc_ste.append(c1 - c0)
+
+        if rep_dc_rnd and rep_dc_ste:
+            mean_rnd = float(np.mean(rep_dc_rnd))
+            mean_ste = float(np.mean(rep_dc_ste))
+            boot_dc_rnd.append(mean_rnd)
+            boot_dc_ste.append(mean_ste)
+            boot_ddc.append(mean_rnd - mean_ste)
+
+    lower_pct = 100.0 * (alpha / 2.0)
+    upper_pct = 100.0 * (1.0 - alpha / 2.0)
+
+    return {
+        "mean_delta_delta_c": float(np.mean(boot_ddc)),
+        "ci_delta_delta_c": [
+            float(np.percentile(boot_ddc, lower_pct)),
+            float(np.percentile(boot_ddc, upper_pct)),
+        ],
+        "mean_delta_c_random": float(np.mean(boot_dc_rnd)),
+        "ci_delta_c_random": [
+            float(np.percentile(boot_dc_rnd, lower_pct)),
+            float(np.percentile(boot_dc_rnd, upper_pct)),
+        ],
+        "mean_delta_c_site": float(np.mean(boot_dc_ste)),
+        "ci_delta_c_site": [
+            float(np.percentile(boot_dc_ste, lower_pct)),
+            float(np.percentile(boot_dc_ste, upper_pct)),
+        ],
+    }

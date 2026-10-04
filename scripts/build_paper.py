@@ -329,6 +329,7 @@ def generate_figures():
     axes[2].set_xticklabels(sens_labels, fontsize=9.5)
     axes[2].set_ylabel(r"Mean $\Delta C$", fontsize=11)
     axes[2].set_title(r"(C) Sensitivity of $\Delta C$", fontsize=12, fontweight="bold")
+    axes[2].set_ylim(-0.005, 0.052)
     axes[2].legend(fontsize=9.5, loc="upper right")
     axes[2].grid(axis="y", linestyle="--", alpha=0.5)
     axes[2].tick_params(axis="both", labelsize=10)
@@ -375,7 +376,7 @@ def compile_latex():
         except subprocess.CalledProcessError as e:
             print(f"pdflatex compilation note: {e}")
     else:
-        print("pdflatex not found on system PATH. LaTeX source files generated and verified.")
+        print("pdflatex not found on system PATH. LaTeX source files generated and traced to file.")
 
 
 def create_overleaf_zip():

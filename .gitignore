@@ -50,4 +50,4 @@ raw_data/
 # Experiment artifacts > 5MB or cache
 checkpoints/
 paper/generated/*.pdf
-paper/paper_overleaf.zip
+*.zip

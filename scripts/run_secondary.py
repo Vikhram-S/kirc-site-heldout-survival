@@ -339,7 +339,9 @@ def update_numbers_json(secondary, diag, sens):
     numbers["ShuffledCMean"] = str(diag["shuffled_label_control"]["mean_c_index"])
     numbers["CanaryLeakedCMean"] = str(diag["leakage_canary"]["mean_leaked_c_index"])
     numbers["CanaryNestedCMean"] = str(diag["leakage_canary"].get("mean_nested_c_index", "N/A"))
-    numbers["CanaryInflationDelta"] = str(diag["leakage_canary"].get("leakage_inflation_delta_c", "N/A"))
+    numbers["CanaryInflationDelta"] = str(
+        diag["leakage_canary"].get("leakage_inflation_delta_c", "N/A")
+    )
 
     # Sensitivity
     if "gene_count_100" in sens:

@@ -1,0 +1,50 @@
+{
+  "0.001": {
+    "repeated_stratified_kfold": {
+      "mean_delta_c": 0.0222,
+      "mean_nonzero_rna": 18.3,
+      "n_folds": 25
+    },
+    "repeated_stratified_group_kfold": {
+      "mean_delta_c": 0.0232,
+      "mean_nonzero_rna": 18.4,
+      "n_folds": 25
+    }
+  },
+  "0.01": {
+    "repeated_stratified_kfold": {
+      "mean_delta_c": 0.0227,
+      "mean_nonzero_rna": 17.8,
+      "n_folds": 25
+    },
+    "repeated_stratified_group_kfold": {
+      "mean_delta_c": 0.0251,
+      "mean_nonzero_rna": 17.6,
+      "n_folds": 25
+    }
+  },
+  "0.1": {
+    "repeated_stratified_kfold": {
+      "mean_delta_c": 0.0235,
+      "mean_nonzero_rna": 18.4,
+      "n_folds": 25
+    },
+    "repeated_stratified_group_kfold": {
+      "mean_delta_c": 0.0252,
+      "mean_nonzero_rna": 17.5,
+      "n_folds": 25
+    }
+  },
+  "1.0": {
+    "repeated_stratified_kfold": {
+      "mean_delta_c": -0.0178,
+      "mean_nonzero_rna": 40.9,
+      "n_folds": 25
+    },
+    "repeated_stratified_group_kfold": {
+      "mean_delta_c": -0.0182,
+      "mean_nonzero_rna": 63.1,
+      "n_folds": 25
+    }
+  }
+}

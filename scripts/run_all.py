@@ -16,7 +16,13 @@ if hasattr(sys.stdout, "reconfigure"):
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
 
 from kirc_survival.data import clean_cohort, compute_descriptive_qc, load_clinical_survival
-from kirc_survival.metrics import cluster_bootstrap_ci, compute_harrell_c, compute_uno_c
+from kirc_survival.metrics import (
+    cluster_bootstrap_ci,
+    compute_harrell_c,
+    compute_nadeau_bengio_ci,
+    compute_uno_c,
+    resample_delta_delta_c_ci,
+)
 from kirc_survival.models import ClinicalCoxModel, ClinicalPlusRNACoxnetModel
 from kirc_survival.splits import generate_splits
 
@@ -78,6 +84,7 @@ def run_primary_experiment(df_full, y, cfg):
     min_site = cfg["site_handling"]["min_site_patients"]
 
     records = []
+    oof_records = []
 
     for scheme in ["repeated_stratified_kfold", "repeated_stratified_group_kfold"]:
         print(f"\n--- Scheme: {scheme} ---")
@@ -140,15 +147,38 @@ def run_primary_experiment(df_full, y, cfg):
             }
             records.append(rec)
 
+            for s_id, s_site, ev, tm, r0, r1 in zip(
+                X_test["sample"],
+                X_test["site"],
+                y_test["Status"],
+                y_test["Survival_in_days"],
+                risk_m0,
+                risk_m1,
+            ):
+                oof_records.append(
+                    {
+                        "scheme": scheme,
+                        "seed": fold.seed,
+                        "repeat_idx": fold.repeat_idx,
+                        "fold_idx": fold.fold_idx,
+                        "sample": s_id,
+                        "site": s_site,
+                        "event": bool(ev),
+                        "time": float(tm),
+                        "risk_m0": float(r0),
+                        "risk_m1": float(r1),
+                    }
+                )
+
             if (i + 1) % 5 == 0 or i == 0:
                 print(
                     f"  Fold {i + 1}/{n_folds}: C_M0={c_m0:.4f} C_M1={c_m1:.4f} dC={delta_c:+.4f} (RNA non-zero: {rec['n_nonzero_rna']}, {elapsed:.1f}s)"
                 )
 
-    return pd.DataFrame(records)
+    return pd.DataFrame(records), pd.DataFrame(oof_records)
 
 
-def summarize_primary(df_results):
+def summarize_primary(df_results, df_oof):
     """Compute mean metrics and bootstrap CIs per scheme, and cross-scheme difference."""
     summary = {}
     for scheme in df_results["scheme"].unique():
@@ -159,6 +189,11 @@ def summarize_primary(df_results):
         mean_nonzero = float(sub["n_nonzero_rna"].mean()) if "n_nonzero_rna" in sub.columns else 0.0
 
         cis = cluster_bootstrap_ci(sub, n_bootstraps=1000, seed=42)
+        nb_ci = compute_nadeau_bengio_ci(
+            sub["delta_c"].to_numpy(),
+            n_train=float(sub["n_train"].mean()),
+            n_test=float(sub["n_test"].mean()),
+        )
 
         summary[scheme] = {
             "mean_c_m0": round(mean_m0, 4),
@@ -168,6 +203,8 @@ def summarize_primary(df_results):
             "ci_m0_95": [round(x, 4) for x in cis["m0"]],
             "ci_m1_95": [round(x, 4) for x in cis["m1"]],
             "ci_delta_95": [round(x, 4) for x in cis["delta"]],
+            "nadeau_bengio_se": round(nb_ci["se"], 4),
+            "ci_delta_nb_95": [round(nb_ci["ci_lower"], 4), round(nb_ci["ci_upper"], 4)],
             "n_folds": len(sub),
         }
 
@@ -176,8 +213,13 @@ def summarize_primary(df_results):
     site_key = "repeated_stratified_group_kfold"
     if random_key in summary and site_key in summary:
         delta_delta_c = summary[random_key]["mean_delta_c"] - summary[site_key]["mean_delta_c"]
+        df_rnd_oof = df_oof[df_oof["scheme"] == random_key]
+        df_ste_oof = df_oof[df_oof["scheme"] == site_key]
+        res_ddc = resample_delta_delta_c_ci(df_rnd_oof, df_ste_oof, n_bootstraps=1000, seed=42)
+
         summary["cross_scheme"] = {
             "delta_delta_c": round(delta_delta_c, 4),
+            "ci_delta_delta_c_95": [round(x, 4) for x in res_ddc["ci_delta_delta_c"]],
             "delta_c_random": summary[random_key]["mean_delta_c"],
             "delta_c_site": summary[site_key]["mean_delta_c"],
             "hypothesis_direction": "dC_random > dC_site"
@@ -222,13 +264,20 @@ def main():
 
     # Step 3: Primary experiment
     print("\n=== PRIMARY EXPERIMENT ===")
-    df_results = run_primary_experiment(df_full, y, cfg)
+    df_results, df_oof = run_primary_experiment(df_full, y, cfg)
     df_results.to_csv(RESULTS_DIR / "primary_fold_results.csv", index=False)
+    df_oof.to_csv(RESULTS_DIR / "primary_oof_predictions.csv", index=False)
 
     # Step 4: Summary
-    summary = summarize_primary(df_results)
+    summary = summarize_primary(df_results, df_oof)
     with open(RESULTS_DIR / "primary_results.json", "w", encoding="utf-8") as f:
         json.dump(summary, f, indent=2)
+
+    # Step 4b: Run LOGO CV
+    print("\n=== LEAVE-ONE-GROUP-OUT CV ===")
+    import subprocess
+
+    subprocess.run([sys.executable, "scripts/run_logo_cv.py"], check=True)
 
     # Print summary
     print("\n=== PRIMARY RESULTS SUMMARY ===")
@@ -238,15 +287,17 @@ def main():
             print(f"  {k}: {v}")
 
     # Step 5: Generate numbers.json for manuscript
-    numbers = {}
+    num_path = RESULTS_DIR / "numbers.json"
+    if num_path.exists():
+        with open(num_path, encoding="utf-8") as f:
+            numbers = json.load(f)
+    else:
+        numbers = {}
+
     for scheme in ["repeated_stratified_kfold", "repeated_stratified_group_kfold"]:
         if scheme in summary:
             s = summary[scheme]
-            prefix = "Random" if "kfold" == scheme.split("_")[-1] else "Site"
-            if scheme == "repeated_stratified_kfold":
-                prefix = "Random"
-            else:
-                prefix = "Site"
+            prefix = "Random" if scheme == "repeated_stratified_kfold" else "Site"
             numbers[f"CMZero{prefix}"] = f"{s['mean_c_m0']:.3f}"
             numbers[f"CMOne{prefix}"] = f"{s['mean_c_m1']:.3f}"
             numbers[f"DeltaC{prefix}"] = f"{s['mean_delta_c']:.4f}"
@@ -256,17 +307,36 @@ def main():
             numbers[f"CIMOneHigh{prefix}"] = f"{s['ci_m1_95'][1]:.3f}"
             numbers[f"CIDeltaLow{prefix}"] = f"{s['ci_delta_95'][0]:.4f}"
             numbers[f"CIDeltaHigh{prefix}"] = f"{s['ci_delta_95'][1]:.4f}"
+            numbers[f"SENB{prefix}"] = f"{s['nadeau_bengio_se']:.4f}"
+            numbers[f"CINBLow{prefix}"] = f"{s['ci_delta_nb_95'][0]:.4f}"
+            numbers[f"CINBHigh{prefix}"] = f"{s['ci_delta_nb_95'][1]:.4f}"
             numbers[f"NFolds{prefix}"] = str(s["n_folds"])
 
     if "cross_scheme" in summary:
         cs = summary["cross_scheme"]
         numbers["DeltaDeltaC"] = f"{cs['delta_delta_c']:.4f}"
+        if "ci_delta_delta_c_95" in cs:
+            numbers["CIDeltaDeltaLow"] = f"{cs['ci_delta_delta_c_95'][0]:.4f}"
+            numbers["CIDeltaDeltaHigh"] = f"{cs['ci_delta_delta_c_95'][1]:.4f}"
 
+    numbers["NPartitionsGrouped"] = "7"
     numbers["NPatients"] = str(qc_summary["n_patients"])
     numbers["NEvents"] = str(qc_summary["n_events"])
     numbers["NSites"] = str(qc_summary["n_sites"])
 
-    with open(RESULTS_DIR / "numbers.json", "w", encoding="utf-8") as f:
+    logo_summary_path = RESULTS_DIR / "logo_cv_summary.json"
+    if logo_summary_path.exists():
+        with open(logo_summary_path, encoding="utf-8") as f:
+            logo_s = json.load(f)
+        numbers["LOGONGroups"] = str(logo_s["n_groups"])
+        numbers["LOGONEvaluable"] = str(logo_s["n_evaluable_groups"])
+        numbers["LOGOCMZeroMean"] = f"{logo_s['unweighted_mean_c_m0']:.3f}"
+        numbers["LOGOCMOneMean"] = f"{logo_s['unweighted_mean_c_m1']:.3f}"
+        numbers["LOGODeltaCMean"] = f"{logo_s['unweighted_mean_delta_c']:.4f}"
+        numbers["LOGODeltaCPatientWeighted"] = f"{logo_s['patient_weighted_delta_c']:.4f}"
+        numbers["LOGODeltaCEventWeighted"] = f"{logo_s['event_weighted_delta_c']:.4f}"
+
+    with open(num_path, "w", encoding="utf-8") as f:
         json.dump(numbers, f, indent=2)
 
     print("\n=== DONE ===")

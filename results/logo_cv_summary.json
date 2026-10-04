@@ -1,0 +1,11 @@
+{
+  "n_groups": 12,
+  "n_evaluable_groups": 11,
+  "unweighted_mean_c_m0": 0.7365,
+  "unweighted_mean_c_m1": 0.7632,
+  "unweighted_mean_delta_c": 0.0267,
+  "patient_weighted_c_m0": 0.7386,
+  "patient_weighted_c_m1": 0.7645,
+  "patient_weighted_delta_c": 0.0258,
+  "event_weighted_delta_c": 0.03
+}

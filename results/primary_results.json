@@ -16,6 +16,11 @@
       0.0163,
       0.0301
     ],
+    "nadeau_bengio_se": 0.0098,
+    "ci_delta_nb_95": [
+      0.0036,
+      0.0438
+    ],
     "n_folds": 25
   },
   "repeated_stratified_group_kfold": {
@@ -35,10 +40,19 @@
       0.0272,
       0.0339
     ],
+    "nadeau_bengio_se": 0.0046,
+    "ci_delta_nb_95": [
+      0.0209,
+      0.0401
+    ],
     "n_folds": 25
   },
   "cross_scheme": {
     "delta_delta_c": -0.0068,
+    "ci_delta_delta_c_95": [
+      -0.0441,
+      0.0178
+    ],
     "delta_c_random": 0.0237,
     "delta_c_site": 0.0305,
     "hypothesis_direction": "dC_random <= dC_site"
