@@ -36,7 +36,7 @@ This checklist and self-audit validate scientific rigor, methodological integrit
 ## 5. Claims and Reporting
 - [x] **Claims Traceability:** 25 quantitative claims cataloged in [`CLAIMS.md`](CLAIMS.md) with exact numerical values and computational traces.
 - [x] **TRIPOD-AI Checklist:** Completed in [`checklists/TRIPOD-AI.md`](checklists/TRIPOD-AI.md).
-- [x] **Audited References:** Academic citations in [`paper/references.bib`](paper/references.bib) checked against peer-reviewed records with DOIs.
+- [x] **Academic References [VERIFIED]:** All four citations in [`paper/references.bib`](paper/references.bib) confirmed. Two corrections applied: (1) `howard2021site` title corrected ("artifacts"→"signatures", "generalization"→"bias"); (2) `wissel2023survboard` updated from wrong bioRxiv DOI to published *Briefings in Bioinformatics* 2025 record (DOI: 10.1093/bib/bbaf521, vol 26 no 5 bbaf521).
 - [x] **Manuscript:** [`paper/main.tex`](paper/main.tex) uses LaTeX macros injected via `paper/generated/numbers.tex` (no hand-typed numbers). Author: Vikhram S (Independent Researcher).
 
 ---

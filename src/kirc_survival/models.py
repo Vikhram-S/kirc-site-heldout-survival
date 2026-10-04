@@ -101,6 +101,7 @@ class ClinicalPlusRNACoxnetModel:
         n_alphas: int = 20,
         inner_cv_splits: int = 3,
         random_state: int = 42,
+        clinical_penalty_factor: float = 0.01,
     ):
         self.clinical_cols = clinical_cols or ["age", "gender", "stage"]
         self.top_n_genes = top_n_genes
@@ -108,6 +109,7 @@ class ClinicalPlusRNACoxnetModel:
         self.n_alphas = n_alphas
         self.inner_cv_splits = inner_cv_splits
         self.random_state = random_state
+        self.clinical_penalty_factor = clinical_penalty_factor
 
         self.clinical_preprocessor = build_clinical_transformer(self.clinical_cols)
         self.rna_selector = TopVarianceSelector(top_n=self.top_n_genes)
@@ -169,10 +171,10 @@ class ClinicalPlusRNACoxnetModel:
             except (ValueError, RuntimeError, ArithmeticError):
                 alphas = None
 
-            # Penalty factor: 0.01 for clinical (light stabilization), 1.0 for RNA
+            # Penalty factor: self.clinical_penalty_factor for clinical, 1.0 for RNA
             penalty_factor = np.concatenate(
                 [
-                    np.full(n_clin_features, 0.01, dtype=float),
+                    np.full(n_clin_features, self.clinical_penalty_factor, dtype=float),
                     np.ones(n_rna_features, dtype=float),
                 ]
             )

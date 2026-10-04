@@ -14,7 +14,7 @@
 ## Research Question & Pre-Specified Hypothesis
 - **Question:** Does the incremental prognostic performance achieved by bulk RNA-seq when added to standard clinical variables persist when evaluated under site-held-out cross-validation?
 - **Hypothesis (Pre-specified in version-controlled protocol, tag `protocol-v1`):** Incremental discrimination $\Delta C = C(M_1) - C(M_0)$ for overall survival is smaller under site-grouped cross-validation than under event-stratified random cross-validation ($\Delta\Delta C = \Delta C_{\text{rand}} - \Delta C_{\text{site}} > 0$).
-- **Empirical Finding:** The hypothesis was **NOT supported**. Incremental discrimination was maintained under both schemes ($\Delta C = +0.0237$ random vs. $+0.0305$ site-held-out; $\Delta\Delta C = -0.0068$, descriptive 95% resampling CI: $[-0.0441, +0.0178]$). However, absolute discrimination dropped under site-held-out splits for both models ($C_{M0}: 0.751 \to 0.734$, $C_{M1}: 0.775 \to 0.764$), reflecting inter-site event-rate and baseline risk heterogeneity across acquisition centers.
+- **Empirical Finding:** The hypothesis was **NOT supported**. The $\Delta\Delta C$ interval ($-0.0068$, descriptive 95% resampling CI: $[-0.0441, +0.0178]$) includes both a modest drop and a modest rise, so the study cannot distinguish the schemes. Incremental discrimination was maintained under both schemes ($\Delta C = +0.0237$ random vs. $+0.0305$ site-held-out). Absolute discrimination dropped under site-held-out splits for both models ($C_{M0}: 0.751 \to 0.734$, $C_{M1}: 0.775 \to 0.764$), which may reflect inter-site event-rate and baseline risk heterogeneity across acquisition centers.
 
 ## Status
 - **Protocol State:** Pre-specified in a version-controlled protocol (tag `protocol-v1`) with documented post-hoc deviations logged in [`DEVIATIONS.md`](DEVIATIONS.md).
@@ -36,27 +36,27 @@ Every metric below is computed programmatically from [`results/numbers.json`](re
 | **Distinct Held-Out Partitions** | 25 | 7 | Limited combinatorial site allocations across 5 seeds |
 
 ### Leave-One-Group-Out (LOGO) Cross-Validation
-Deterministic Leave-One-Group-Out CV across 11 sites with $\ge 5$ patients plus 1 pooled group ($\LOGONGroups$ groups, $\LOGONEvaluable$ evaluable with $>0$ deaths):
-- Unweighted mean: $C(M_0) = 0.737$, $C(M_1) = 0.763$, $\Delta C = +0.0267$.
-- Patient-weighted $\Delta C = +0.0258$; Event-weighted $\Delta C = +0.0300$.
-- Explains absolute $C$ decline: Event rates vary dramatically across contributing centers (e.g. B0: 65.1% deaths, $C_{M0}=0.7060$ vs. BP: 27.5% deaths, $C_{M0}=0.7572$; A3: 14.3% deaths, $C_{M0}=0.6292$). Evaluating on intact sites tests distinct baseline risk mixtures, lowering average absolute concordance relative to randomized blending.
+Deterministic Leave-One-Group-Out CV across 11 sites with $\ge 5$ patients plus 1 pooled group (12 groups, 11 evaluable with $>0$ deaths):
+- **Headline Event-Weighted $\Delta C = +0.0300$**; Patient-Weighted $\Delta C = +0.0258$; Unweighted Mean: $C(M_0) = 0.737$, $C(M_1) = 0.763$, $\Delta C = +0.0267$.
+- Centers with $<5$ observed death events exhibit substantial estimation instability (e.g. site B8 with 1 event had $C=1.000$; site B4 with 0 events was unevaluable).
+- May reflect inter-site heterogeneity: Event rates vary widely across centers (e.g. B0: 65.1% deaths, $C_{M0}=0.7060$ vs. BP: 27.5% deaths, $C_{M0}=0.7572$; A3: 14.3% deaths, $C_{M0}=0.6292$). Evaluating on intact sites tests distinct baseline risk mixtures, which may explain the drop in average absolute concordance relative to randomized blending.
 
 ### Negative Controls & Methodological Diagnostics
 - **Site-Only Survival Model:** Mean $C = 0.6539$. Center identity carries non-trivial survival signal due to institutional epidemiological differences.
 - **RNA $\to$ Site Batch Classifier:** Accuracy = 29.15% vs. 27.79% majority class baseline (fold SD 0.029). The classifier did not clearly exceed the majority baseline, suggesting transcriptomic features are not dominated by broad acquisition site artifacts.
 - **Permutation Control:** Mean $C = 0.5008$, confirming chance-level null discrimination under label permutation.
-- **Leakage Canary Demonstration:** A single synthetic demonstration comparing unnested full-dataset feature selection against strictly nested within-fold selection ($C = 0.6728$ vs. $0.6617$; inflation $\Delta C = +0.0111$), illustrating the magnitude of optimism produced by pre-split target leakage.
+- **Deliberate Leakage Demonstration (Real KIRC Data):** A two-arm comparison between unnested full-dataset feature selection against strictly nested within-fold selection ($C = 0.6728$ vs. $0.6617$; inflation $\Delta C = +0.0111$), illustrating the magnitude of optimism produced by pre-split target leakage. (Planted signal checks were evaluated separately as synthetic positive controls).
 
 ### Sensitivity Analyses
 - **Top 100 Genes:** Random $\Delta C = +0.0192$, Site $\Delta C = +0.0221$.
 - **Top 1000 Genes:** Random $\Delta C = +0.0211$, Site $\Delta C = +0.0257$.
 - **Excluding Tiny Sites ($<5$ patients):** Random $\Delta C = +0.0316$, Site $\Delta C = +0.0354$ ($N=511$, 11 sites).
-- **Clinical Penalty Factor Grid:** $\text{pf} \in \{0.001, 0.01, 0.1, 1.0\}$: $\Delta C$ remains $+0.022$ to $+0.025$ for $\text{pf} \le 0.1$, and drops to $-0.018$ at $\text{pf}=1.0$ when clinical preservation is removed. Clinical $\text{pf}=0.01$ is retained as a post-hoc baseline.
+- **Clinical Penalty Factor Sensitivity Grid:** Evaluated over $\text{pf} \in \{0.001, 0.01, 0.1, 1.0\}$: at $\text{pf}=0.001$, $\Delta C = +0.0235$ (random) / $+0.0301$ (site); at $\text{pf}=0.01$ (primary baseline), $\Delta C = +0.0237$ / $+0.0305$; at $\text{pf}=0.1$, $\Delta C = +0.0235$ / $+0.0251$; at $\text{pf}=1.0$ (no clinical protection), $\Delta C = -0.0136$ / $-0.0100$. This confirms incremental prognostic gain exists only when clinical covariates are lightly penalized.
 
 ## Relation to Prior Work
-- **Herrmann et al. (2020):** Benchmarked multi-omics survival prediction, observing that regularized molecular models rarely beat well-curated clinical baselines under rigorous resampling. Our findings demonstrate that while clinical predictors form a strong foundation ($C \approx 0.73\text{--}0.75$), bulk RNA-seq adds a modest incremental gain ($\Delta C \approx +0.024\text{--}+0.031$) when clinical variables are preserved unpenalized.
-- **SurvBoard (Wissel et al., 2023):** Emphasized standardized benchmarking and cross-cohort validation deficits. Our leakage canary provides a reproducible demonstration of the target leakage traps documented in SurvBoard.
-- **Howard et al. (2021):** Demonstrated institutional acquisition confounding in computational pathology. In TCGA-KIRC bulk RNA-seq, we found that acquisition center identity correlates with survival ($C = 0.654$), but the incremental transcriptomic signal itself generalized across held-out centers without optimism loss ($\Delta\Delta C = -0.0068$).
+- **Herrmann et al. (2020) [TO VERIFY]:** Reported a multi-omics survival prediction benchmark describing limited incremental performance of regularized molecular models over well-curated clinical variables under repeated resampling. In our TCGA-KIRC evaluation, preserving clinical predictors under light regularization while regularizing RNA features yielded modest incremental gains ($\Delta C \approx +0.024\text{--}+0.031$).
+- **SurvBoard (Wissel et al., 2023) [TO VERIFY]:** Described multi-omics cancer survival benchmarking and highlighted potential vulnerabilities to data leakage. Our deliberate leakage demonstration provides a reproducible empirical illustration of pre-split target leakage on TCGA-KIRC.
+- **Howard et al. (2021) [TO VERIFY]:** Documented institutional acquisition confounding in digital pathology. In TCGA-KIRC bulk RNA-seq, center identity carries survival signal ($C = 0.654$), but incremental transcriptomic discrimination persisted across held-out centers ($\Delta\Delta C = -0.0068$).
 
 ## One-Command Reproduction
 To execute the complete pipeline from scratch:
@@ -101,7 +101,7 @@ pytest
 1. **Single Cohort:** Evaluated strictly in TCGA-KIRC; findings may not extrapolate to other malignancies.
 2. **TSS Proxy:** Tissue Source Site (TSS) codes represent tissue-contributing institutions and may conflate surgical center, pathology handling, and submission batch.
 3. **Model Family:** Limited to regularized linear Cox proportional hazards models; non-linear interactions or deep survival models were not evaluated.
-4. **Post-Hoc Parameter Selection:** Clinical penalty factor $0.01$ was chosen post hoc following the v1.0 null result, disclosed with sensitivity analysis across 3 orders of magnitude.
+4. **Post-Hoc Parameter Selection:** Clinical penalty factor $0.01$ was chosen post hoc after observing that RNA coefficients were shrunk to zero across the entire regularization path under the original package configuration, disclosed with sensitivity analysis across four penalty factor settings ($\text{pf} \in \{0.001, 0.01, 0.1, 1.0\}$).
 5. **Finite Site Partitions:** Stratified grouping of 12 site groups yields 7 distinct test partitions across 25 folds, addressed via Leave-One-Group-Out CV and Nadeau-Bengio corrected variance estimators.
 
 ## Artificial Intelligence Disclosure

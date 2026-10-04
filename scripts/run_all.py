@@ -336,6 +336,35 @@ def main():
         numbers["LOGODeltaCPatientWeighted"] = f"{logo_s['patient_weighted_delta_c']:.4f}"
         numbers["LOGODeltaCEventWeighted"] = f"{logo_s['event_weighted_delta_c']:.4f}"
 
+    pf_path = RESULTS_DIR / "penalty_factor_sensitivity.json"
+    if pf_path.exists():
+        with open(pf_path, encoding="utf-8") as f:
+            pf_s = json.load(f)
+        numbers["DeltaCPfZeroZeroOneRandom"] = (
+            f"{pf_s['0.001']['repeated_stratified_kfold']['mean_delta_c']:+.4f}"
+        )
+        numbers["DeltaCPfZeroZeroOneSite"] = (
+            f"{pf_s['0.001']['repeated_stratified_group_kfold']['mean_delta_c']:+.4f}"
+        )
+        numbers["DeltaCPfZeroOneRandom"] = (
+            f"{pf_s['0.01']['repeated_stratified_kfold']['mean_delta_c']:+.4f}"
+        )
+        numbers["DeltaCPfZeroOneSite"] = (
+            f"{pf_s['0.01']['repeated_stratified_group_kfold']['mean_delta_c']:+.4f}"
+        )
+        numbers["DeltaCPfPointOneRandom"] = (
+            f"{pf_s['0.1']['repeated_stratified_kfold']['mean_delta_c']:+.4f}"
+        )
+        numbers["DeltaCPfPointOneSite"] = (
+            f"{pf_s['0.1']['repeated_stratified_group_kfold']['mean_delta_c']:+.4f}"
+        )
+        numbers["DeltaCPfOneRandom"] = (
+            f"{pf_s['1.0']['repeated_stratified_kfold']['mean_delta_c']:+.4f}"
+        )
+        numbers["DeltaCPfOneSite"] = (
+            f"{pf_s['1.0']['repeated_stratified_group_kfold']['mean_delta_c']:+.4f}"
+        )
+
     with open(num_path, "w", encoding="utf-8") as f:
         json.dump(numbers, f, indent=2)
 

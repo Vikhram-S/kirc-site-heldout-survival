@@ -1,49 +1,65 @@
 {
   "0.001": {
     "repeated_stratified_kfold": {
-      "mean_delta_c": 0.0222,
-      "mean_nonzero_rna": 18.3,
+      "mean_c_m0": 0.7514,
+      "mean_c_m1": 0.7749,
+      "mean_delta_c": 0.0235,
+      "mean_nonzero_rna": 19.7,
       "n_folds": 25
     },
     "repeated_stratified_group_kfold": {
-      "mean_delta_c": 0.0232,
-      "mean_nonzero_rna": 18.4,
+      "mean_c_m0": 0.734,
+      "mean_c_m1": 0.764,
+      "mean_delta_c": 0.0301,
+      "mean_nonzero_rna": 21.2,
       "n_folds": 25
     }
   },
   "0.01": {
     "repeated_stratified_kfold": {
-      "mean_delta_c": 0.0227,
-      "mean_nonzero_rna": 17.8,
+      "mean_c_m0": 0.7514,
+      "mean_c_m1": 0.7751,
+      "mean_delta_c": 0.0237,
+      "mean_nonzero_rna": 18.0,
       "n_folds": 25
     },
     "repeated_stratified_group_kfold": {
-      "mean_delta_c": 0.0251,
-      "mean_nonzero_rna": 17.6,
+      "mean_c_m0": 0.734,
+      "mean_c_m1": 0.7645,
+      "mean_delta_c": 0.0305,
+      "mean_nonzero_rna": 20.3,
       "n_folds": 25
     }
   },
   "0.1": {
     "repeated_stratified_kfold": {
+      "mean_c_m0": 0.7514,
+      "mean_c_m1": 0.7749,
       "mean_delta_c": 0.0235,
-      "mean_nonzero_rna": 18.4,
+      "mean_nonzero_rna": 17.5,
       "n_folds": 25
     },
     "repeated_stratified_group_kfold": {
-      "mean_delta_c": 0.0252,
-      "mean_nonzero_rna": 17.5,
+      "mean_c_m0": 0.734,
+      "mean_c_m1": 0.759,
+      "mean_delta_c": 0.0251,
+      "mean_nonzero_rna": 19.8,
       "n_folds": 25
     }
   },
   "1.0": {
     "repeated_stratified_kfold": {
-      "mean_delta_c": -0.0178,
-      "mean_nonzero_rna": 40.9,
+      "mean_c_m0": 0.7514,
+      "mean_c_m1": 0.7378,
+      "mean_delta_c": -0.0136,
+      "mean_nonzero_rna": 40.6,
       "n_folds": 25
     },
     "repeated_stratified_group_kfold": {
-      "mean_delta_c": -0.0182,
-      "mean_nonzero_rna": 63.1,
+      "mean_c_m0": 0.734,
+      "mean_c_m1": 0.724,
+      "mean_delta_c": -0.01,
+      "mean_nonzero_rna": 45.8,
       "n_folds": 25
     }
   }

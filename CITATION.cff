@@ -4,8 +4,8 @@ authors:
   - family-names: "S"
     given-names: "Vikhram"
 title: "Does the added prognostic value of RNA-seq over clinical variables survive site-held-out validation? A pre-specified re-evaluation in TCGA-KIRC"
-version: 0.1.0
-date-released: 2026-10-01
+version: 1.2.0
+date-released: 2026-10-04
 url: "https://github.com/Vikhram-S/kirc-site-heldout-survival"
 type: software
 license: MIT

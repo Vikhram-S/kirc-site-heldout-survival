@@ -55,5 +55,13 @@
   "LOGOCMOneMean": "0.763",
   "LOGODeltaCMean": "0.0267",
   "LOGODeltaCPatientWeighted": "0.0258",
-  "LOGODeltaCEventWeighted": "0.0300"
+  "LOGODeltaCEventWeighted": "0.0300",
+  "DeltaCPfZeroZeroOneRandom": "+0.0235",
+  "DeltaCPfZeroZeroOneSite": "+0.0301",
+  "DeltaCPfZeroOneRandom": "+0.0237",
+  "DeltaCPfZeroOneSite": "+0.0305",
+  "DeltaCPfPointOneRandom": "+0.0235",
+  "DeltaCPfPointOneSite": "+0.0251",
+  "DeltaCPfOneRandom": "-0.0136",
+  "DeltaCPfOneSite": "-0.0100"
 }

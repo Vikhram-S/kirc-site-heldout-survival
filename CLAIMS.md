@@ -20,7 +20,7 @@ Each claim traces directly to a specific output file in `results/` produced by r
 | **CLM-013** | Diagnostic | RNA $\to$ Site classifier cross-validation accuracy | 0.2915 | `results/diagnostics_results.json` (`mean_cv_accuracy`) | `scripts/run_secondary.py` | **Traced to File** |
 | **CLM-014** | Diagnostic | RNA $\to$ Site classifier majority class baseline | 0.2779 | `results/diagnostics_results.json` (`majority_class_baseline`) | `scripts/run_secondary.py` | **Traced to File** |
 | **CLM-015** | Control | Shuffled survival target mean C-index | 0.5008 | `results/diagnostics_results.json` (`mean_c_index`) | `scripts/run_secondary.py` | **Traced to File** |
-| **CLM-016** | Diagnostic | Leakage canary apparent C-index under full-data selection (vs nested 0.6617, inflation +0.0111) | 0.6728 | `results/diagnostics_results.json` (`mean_leaked_c_index`) | `scripts/run_secondary.py` | **Traced to File** |
+| **CLM-016** | Diagnostic | Deliberate leakage demonstration apparent C-index under full-data selection (vs nested 0.6617, inflation +0.0111) | 0.6728 | `results/diagnostics_results.json` (`mean_leaked_c_index`) | `scripts/run_secondary.py` | **Traced to File** |
 | **CLM-017** | Sensitivity | Top 100 genes $\Delta C$ (random / site) | +0.0192 / +0.0221 | `results/sensitivity_results.json` (`gene_count_100`) | `scripts/run_secondary.py` | **Traced to File** |
 | **CLM-018** | Sensitivity | Top 1000 genes $\Delta C$ (random / site) | +0.0211 / +0.0257 | `results/sensitivity_results.json` (`gene_count_1000`) | `scripts/run_secondary.py` | **Traced to File** |
 | **CLM-019** | Sensitivity | Excluding tiny sites $<5$ patients $\Delta C$ (random / site) | +0.0316 / +0.0354 | `results/sensitivity_results.json` (`excluding_tiny_sites`) | `scripts/run_secondary.py` | **Traced to File** |
@@ -29,6 +29,6 @@ Each claim traces directly to a specific output file in `results/` produced by r
 | **CLM-022** | Inference | Nadeau-Bengio corrected repeated-CV 95% CI (random / site) | [0.0036, 0.0438] / [0.0209, 0.0401] | `results/primary_results.json` (`ci_delta_nb_95`) | `scripts/run_all.py` | **Traced to File** |
 | **CLM-023** | Inference | LOGO CV across 11 sites $\ge 5$ pts + pooled group (unweighted / patient-weighted $\Delta C$) | +0.0267 / +0.0258 | `results/logo_cv_summary.json` | `scripts/run_logo_cv.py` | **Traced to File** |
 | **CLM-024** | Inference | Distinct held-out test partitions in repeated grouped CV across 25 folds | 7 | `results/numbers.json` (`NPartitionsGrouped`) | `scripts/run_all.py` | **Traced to File** |
-| **CLM-025** | Sensitivity | Clinical penalty factor sensitivity audit over $\{0.001, 0.01, 0.1, 1.0\}$ | Stable $\le 0.1$ (+0.022 to +0.025); drops at 1.0 (-0.018) | `results/penalty_factor_sensitivity.json` | `scripts/audit_penalty_sensitivity.py` | **Traced to File** |
+| **CLM-025** | Sensitivity | Clinical penalty factor sensitivity audit over $\{0.001, 0.01, 0.1, 1.0\}$ | Positive $\le 0.1$ (+0.0235 to +0.0305); drops to negative at 1.0 (-0.0136 / -0.0100) | `results/penalty_factor_sensitivity.json` | `scripts/audit_penalty_sensitivity.py` | **Traced to File** |
 
 *All 25 claims are backed by executable code and saved output files.*

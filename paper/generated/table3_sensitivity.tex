@@ -1,7 +1,7 @@
 % Diagnostics and Sensitivity Analysis Table
 \begin{table}[htbp]
 \centering
-\caption{Negative control diagnostics and sensitivity analyses.}
+\caption{Negative control diagnostics, clinical penalty factor sensitivity, and feature sensitivity analyses.}
 \label{tab:sensitivity}
 \resizebox{0.95\textwidth}{!}{%
 \begin{tabular}{llcc}
@@ -11,7 +11,12 @@ Category & Experiment / Control & Metric / Value & Benchmark \\
 Diagnostic & Site-Only Survival Model & $C = \SiteOnlyCMean$ & 0.50 (No site signal) \\
 Diagnostic & RNA $\to$ Site Batch Classifier & Acc = \RNASiteAccuracy & \RNASiteBaseline\ (Majority Class) \\
 Negative Control & Shuffled-Label Survival Model & $C = \ShuffledCMean$ & 0.50 (Null baseline) \\
-Methodological Canary & Pre-Split vs.\ Nested Selection & Leaked $C = \CanaryLeakedCMean$ & Nested $C = \CanaryNestedCMean$ \\
+Leakage Demonstration & Pre-Split vs.\ Nested Selection (Real Data) & Leaked $C = \CanaryLeakedCMean$ & Nested $C = \CanaryNestedCMean$ \\
+\midrule
+Sensitivity & Clinical Penalty 0.001 (Random / Site $\Delta C$) & \DeltaCPfZeroZeroOneRandom\ / \DeltaCPfZeroZeroOneSite & Baseline (0.01) \\
+Sensitivity & Clinical Penalty 0.01 (Primary Baseline) & +\DeltaCRandom\ / +\DeltaCSite & Primary Specification \\
+Sensitivity & Clinical Penalty 0.1 (Random / Site $\Delta C$) & \DeltaCPfPointOneRandom\ / \DeltaCPfPointOneSite & Baseline (0.01) \\
+Sensitivity & Clinical Penalty 1.0 (No Clinical Protection) & \DeltaCPfOneRandom\ / \DeltaCPfOneSite & Baseline (0.01) \\
 \midrule
 Sensitivity & Top 100 Genes (Random / Site $\Delta C$) & +\DeltaCOneHundredRandom\ / +\DeltaCOneHundredSite & Baseline (500 genes) \\
 Sensitivity & Top 1000 Genes (Random / Site $\Delta C$) & +\DeltaCOneThousandRandom\ / +\DeltaCOneThousandSite & Baseline (500 genes) \\
