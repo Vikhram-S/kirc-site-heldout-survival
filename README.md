@@ -1,4 +1,4 @@
-# Does the Added Prognostic Value of RNA-seq Over Clinical Variables Survive Site-Held-Out Validation? A Pre-Specified Re-Evaluation with Documented Deviations in TCGA-KIRC
+# Does RNA-seq Add Prognostic Value Beyond Clinical Variables Under Site-Held-Out Validation in TCGA-KIRC?
 
 *Status: v1.1, preliminary, preprint in preparation.*
 
