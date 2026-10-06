@@ -1,9 +1,9 @@
 # Does RNA-seq Add Prognostic Value Beyond Clinical Variables Under Site-Held-Out Validation in TCGA-KIRC?
 
-*Status: v1.1, preliminary, preprint in preparation.*
+*Status: v1.2, preliminary, preprint in preparation.*
 
 > [!NOTE]
-> **Version Notice (v1.0 Withdrawal & v1.1 Release):** The original release tag `v1.0` was removed because it contained a nested zip artifact (`paper_overleaf.zip`) that triggered antivirus warnings, and the models underwent post-hoc correction of clinical regularization. Historical v1.0 outputs from commit `177c723` are permanently preserved in [`results/archive_v1.0/`](results/archive_v1.0/). Corrected analyses with documented deviations ship as `v1.1`. See [`DEVIATIONS.md`](DEVIATIONS.md) and [`RELEASE_NOTES.md`](RELEASE_NOTES.md).
+> **Version Notice (v1.0 Withdrawal & v1.2 Release):** The original release tag `v1.0` was removed because it contained a nested zip artifact (`paper_overleaf.zip`) that triggered antivirus warnings, and the models underwent post-hoc correction of clinical regularization. Historical v1.0 outputs from commit `177c723` are permanently preserved in [`results/archive_v1.0/`](results/archive_v1.0/). Corrected analyses with documented deviations ship as `v1.2`. See [`DEVIATIONS.md`](DEVIATIONS.md) and [`RELEASE_NOTES.md`](RELEASE_NOTES.md).
 
 [![CI](https://github.com/Vikhram-S/kirc-site-heldout-survival/actions/workflows/ci.yml/badge.svg)](https://github.com/Vikhram-S/kirc-site-heldout-survival/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
